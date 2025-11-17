@@ -31,13 +31,14 @@ import {
   VisibilityOff as VisibilityOffIcon,
   Save as SaveIcon,
   Security as SecurityIcon,
-  Person as PersonIcon
+  Person as PersonIcon,
+  Business as BusinessIcon
 } from '@mui/icons-material';
 import { AuthContext } from '../../context/AuthContext';
 import authHeader from '../../services/AuthHeader';
 
 const UserProfile = () => {
-  const { currentUser } = useContext(AuthContext);
+  const { currentUser, getCompanyName, getCompanyId } = useContext(AuthContext);
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(0);
   const [userDetails, setUserDetails] = useState({
@@ -75,9 +76,7 @@ const UserProfile = () => {
   const fetchUserDetails = async () => {
     setLoading(true);
     try {
-      // Get the user profile from the auth context
       if (currentUser) {
-        // Try to fetch user details from API first for more accurate information
         try {
           const response = await axios.get(
             `http://localhost:8080/api/users/${currentUser.id}`,
@@ -102,7 +101,6 @@ const UserProfile = () => {
           setUserDetails(userProfileData);
         } catch (apiError) {
           console.log("Couldn't fetch from API, using local data:", apiError);
-          // Fallback to using data from auth context
           const userProfileData = {
             username: currentUser.username || currentUser.name || '',
             email: currentUser.email || '',
@@ -114,19 +112,16 @@ const UserProfile = () => {
             lastLogin: new Date().toISOString()
           };
           
-          // Explicitly check for role in different locations in the currentUser object
           if (!userProfileData.position && currentUser.roles && currentUser.roles.length > 0) {
             userProfileData.position = currentUser.roles[0].replace('ROLE_', '');
           }
           
-          // Log the user data for debugging
           console.log("Current user data:", currentUser);
           console.log("Using role from local data:", userProfileData.position);
           
           setUserDetails(userProfileData);
         }
       } else {
-        // If no current user is available, redirect to login
         navigate('/login');
       }
       setLoading(false);
@@ -166,22 +161,18 @@ const UserProfile = () => {
   };
   
   const validatePassword = (password) => {
-    // At least 8 characters long
     if (password.length < 8) {
       return { valid: false, message: 'Password must be at least 8 characters long' };
     }
     
-    // Include at least one uppercase letter
     if (!/[A-Z]/.test(password)) {
       return { valid: false, message: 'Password must include at least one uppercase letter' };
     }
     
-    // Include at least one number
     if (!/[0-9]/.test(password)) {
       return { valid: false, message: 'Password must include at least one number' };
     }
     
-    // Include at least one special character
     if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
       return { valid: false, message: 'Password must include at least one special character' };
     }
@@ -192,14 +183,11 @@ const UserProfile = () => {
   const handleUpdateProfile = async () => {
     setLoading(true);
     try {
-      // Create payload without including the role - role is now intentionally omitted
       const updateData = {
         name: userDetails.fullName,
         email: userDetails.email
-        // Role is intentionally omitted to prevent changes
       };
       
-      // Call the backend API to update the user profile
       await axios.put(
         `http://localhost:8080/api/users/${currentUser.id}`, 
         updateData,
@@ -225,7 +213,6 @@ const UserProfile = () => {
   };
   
   const handleChangePassword = async () => {
-    // Simple validation
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       setSnackbar({
         open: true,
@@ -235,7 +222,6 @@ const UserProfile = () => {
       return;
     }
     
-    // Validate password complexity
     const validation = validatePassword(passwordData.newPassword);
     if (!validation.valid) {
       setSnackbar({
@@ -248,15 +234,13 @@ const UserProfile = () => {
     
     setLoading(true);
     try {
-      // Create payload with required fields
       const updatePayload = {
         name: userDetails.fullName,
         email: userDetails.email,
         password: passwordData.newPassword,
-        role: userDetails.position  // Use the current role
+        role: userDetails.position
       };
       
-      // Call the backend API to change the password
       await axios.put(
         `http://localhost:8080/api/users/${currentUser.id}`, 
         updatePayload,
@@ -354,7 +338,6 @@ const UserProfile = () => {
       </Box>
 
       <Grid container spacing={3} justifyContent="center">
-        {/* Centered column - Tabs for editing profile and changing password */}
         <Grid item xs={12} md={8}>
           <Paper 
             elevation={2} 
@@ -397,7 +380,6 @@ const UserProfile = () => {
               />
             </Tabs>
             
-            {/* Profile Details Tab */}
             <Box 
               role="tabpanel"
               hidden={activeTab !== 0}
@@ -478,7 +460,6 @@ const UserProfile = () => {
                       />
                     </Grid>
                     <Grid item xs={12} sm={6}>
-                      {/* Replaced Select with read-only TextField for role */}
                       <TextField
                         fullWidth
                         label="Role"
@@ -498,6 +479,27 @@ const UserProfile = () => {
                             </InputAdornment>
                           ),
                           readOnly: true
+                        }}
+                      />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        label="Company"
+                        value={getCompanyName ? getCompanyName() : 'N/A'}
+                        disabled
+                        sx={{ 
+                          mb: 2,
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: '8px'
+                          }
+                        }}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <BusinessIcon sx={{ color: 'rgba(52, 152, 219, 0.6)' }} />
+                            </InputAdornment>
+                          ),
                         }}
                       />
                     </Grid>
@@ -538,7 +540,7 @@ const UserProfile = () => {
                   {isEditing && (
                     <Box sx={{ mt: 2 }}>
                       <Alert severity="info" sx={{ borderRadius: '8px' }}>
-                        Note: Username, email, and role cannot be changed. Please contact an administrator if you need to update these fields.
+                        Note: Username, email, company, and role cannot be changed. Please contact an administrator if you need to update these fields.
                       </Alert>
                     </Box>
                   )}
@@ -546,7 +548,6 @@ const UserProfile = () => {
               )}
             </Box>
             
-            {/* Security Tab */}
             <Box 
               role="tabpanel"
               hidden={activeTab !== 1}
@@ -693,9 +694,6 @@ const UserProfile = () => {
         </Grid>
       </Grid>
       
-      {/* Profile header with avatar removed */}
-      
-      {/* Snackbar for notifications */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}

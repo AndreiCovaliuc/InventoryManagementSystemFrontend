@@ -281,6 +281,20 @@ const Navbar = () => {
                 >
                   Inventory System
                 </Typography>
+                {currentUser?.companyName && (
+                <Typography 
+                  variant="subtitle1" 
+                  sx={{ 
+                  ml: 1.5,
+                  color: '#666',
+                  fontWeight: 500,
+                  fontFamily: "'Poppins', sans-serif",
+                  display: { xs: 'none', sm: 'block' }
+                }}
+              >
+                | {currentUser.companyName}
+              </Typography>
+            )}
               </Box>
             )}
           </Box>

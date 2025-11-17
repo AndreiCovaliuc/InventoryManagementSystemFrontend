@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { 
   Box, 
   Typography, 
@@ -247,20 +247,26 @@ const Login = () => {
                   {loading ? "Signing In..." : "Sign In"}
                 </Button>
                 <Grid container justifyContent="center">
-                  <Grid item>
-                    <Typography 
-                      variant="body2" 
-                      align="center"
-                      color="text.secondary"
-                      sx={{ 
-                        mt: 1,
-                        fontFamily: "'Roboto', sans-serif"
-                      }}
-                    >
-                      Don't have an account? Contact your administrator
-                    </Typography>
-                  </Grid>
-                </Grid>
+  <Grid item>
+    <Typography 
+      variant="body2" 
+      align="center"
+      color="text.secondary"
+      sx={{ 
+        mt: 1,
+        fontFamily: "'Roboto', sans-serif"
+      }}
+    >
+      Don't have a company account?{' '}
+      <Link 
+        to="/register-company" 
+        style={{ color: '#3498db', textDecoration: 'none', fontWeight: 500 }}
+      >
+        Register your company
+      </Link>
+    </Typography>
+  </Grid>
+</Grid>
               </Box>
             </Box>
           </Paper>

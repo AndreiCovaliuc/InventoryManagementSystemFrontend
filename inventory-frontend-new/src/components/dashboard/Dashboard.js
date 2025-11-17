@@ -47,31 +47,28 @@ const ResponsiveDashboard = () => {
   const [exporting, setExporting] = useState(false);
   const [productsByCategory, setProductsByCategory] = useState([]);
   const [inventoryHistory, setInventoryHistory] = useState([]);
+  const [hasPreviousStats, setHasPreviousStats] = useState(false);
   
-  // State for inventory stats with historical data for trends
   const [stats, setStats] = useState({
     productCount: 0,
-    previousProductCount: 0,
+    previousProductCount: null,
     categoryCount: 0,
-    previousCategoryCount: 0,
+    previousCategoryCount: null,
     supplierCount: 0,
-    previousSupplierCount: 0,
+    previousSupplierCount: null,
     lowStockCount: 0,
-    previousLowStockCount: 0,
+    previousLowStockCount: null,
     lowStockItems: [],
     totalQuantity: 0,
-    previousTotalQuantity: 0
+    previousTotalQuantity: null
   });
   
-  // Colors for pie chart
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#ff8042'];
 
-  // Initial data fetch and auto-refresh
   useEffect(() => {
     fetchData();
     fetchHistoryData();
     
-    // Set up auto-refresh every 30 seconds for real-time updates
     const refreshInterval = setInterval(() => {
       fetchData();
       fetchHistoryData();
@@ -84,60 +81,62 @@ const ResponsiveDashboard = () => {
     try {
       setLoading(true);
       
-      // Fetch current data
       const [
         productsRes, 
         categoriesRes, 
         suppliersRes, 
-        inventoryRes,
-        previousStatsRes
+        inventoryRes
       ] = await Promise.all([
         axios.get('http://localhost:8080/api/products', { headers: authHeader() }),
         axios.get('http://localhost:8080/api/categories', { headers: authHeader() }),
         axios.get('http://localhost:8080/api/suppliers', { headers: authHeader() }),
-        axios.get('http://localhost:8080/api/inventory', { headers: authHeader() }),
-        axios.get('http://localhost:8080/api/stats/previous', { headers: authHeader() })
-          .catch(() => ({ data: null })) // Handle gracefully if endpoint doesn't exist
+        axios.get('http://localhost:8080/api/inventory', { headers: authHeader() })
       ]);
       
-      // Get low stock items
-      const lowStockItemsRes = await axios.get('http://localhost:8080/api/inventory/low-stock', { headers: authHeader() });
+      let lowStockItems = [];
+      try {
+        const lowStockItemsRes = await axios.get('http://localhost:8080/api/inventory/low-stock', { headers: authHeader() });
+        lowStockItems = Array.isArray(lowStockItemsRes.data) ? lowStockItemsRes.data : [];
+      } catch (err) {
+        console.error('Error fetching low stock items:', err);
+      }
       
-      // Set basic stats
       const allInventory = Array.isArray(inventoryRes.data) ? inventoryRes.data : [];
-      const lowStockItems = Array.isArray(lowStockItemsRes.data) ? lowStockItemsRes.data : [];
-      
-      // Calculate total inventory quantity
       const totalQuantity = allInventory.reduce((sum, item) => sum + (item.quantity || 0), 0);
       
-      // Get previous period stats if available, otherwise use estimates for demo
-      const previousStats = previousStatsRes.data || {
-        productCount: Math.max(0, Array.isArray(productsRes.data) ? Math.floor(productsRes.data.length * 0.9) : 0),
-        categoryCount: Math.max(0, Array.isArray(categoriesRes.data) ? Math.floor(categoriesRes.data.length * 0.95) : 0),
-        supplierCount: Math.max(0, Array.isArray(suppliersRes.data) ? Math.floor(suppliersRes.data.length * 0.97) : 0),
-        lowStockCount: Math.floor(lowStockItems.length * 1.2), // Assume we improved low stock situation
-        totalQuantity: Math.max(0, Math.floor(totalQuantity * 0.93)) // Assume 7% growth
-      };
+      let previousStats = null;
+      let hasPrevStats = false;
+      
+      try {
+        const previousStatsRes = await axios.get('http://localhost:8080/api/stats/previous', { headers: authHeader() });
+        if (previousStatsRes.data) {
+          previousStats = previousStatsRes.data;
+          hasPrevStats = true;
+        }
+      } catch (err) {
+        console.log('Previous stats not available');
+        hasPrevStats = false;
+      }
+      
+      setHasPreviousStats(hasPrevStats);
       
       setStats({
         productCount: Array.isArray(productsRes.data) ? productsRes.data.length : 0,
-        previousProductCount: previousStats.productCount,
+        previousProductCount: hasPrevStats ? previousStats.productCount : null,
         categoryCount: Array.isArray(categoriesRes.data) ? categoriesRes.data.length : 0,
-        previousCategoryCount: previousStats.categoryCount,
+        previousCategoryCount: hasPrevStats ? previousStats.categoryCount : null,
         supplierCount: Array.isArray(suppliersRes.data) ? suppliersRes.data.length : 0,
-        previousSupplierCount: previousStats.supplierCount,
+        previousSupplierCount: hasPrevStats ? previousStats.supplierCount : null,
         lowStockCount: lowStockItems.length,
-        previousLowStockCount: previousStats.lowStockCount,
+        previousLowStockCount: hasPrevStats ? previousStats.lowStockCount : null,
         lowStockItems: lowStockItems,
         totalQuantity: totalQuantity,
-        previousTotalQuantity: previousStats.totalQuantity
+        previousTotalQuantity: hasPrevStats ? previousStats.totalQuantity : null
       });
 
-      // Generate products by category data for pie chart
       const products = Array.isArray(productsRes.data) ? productsRes.data : [];
       const categories = Array.isArray(categoriesRes.data) ? categoriesRes.data : [];
 
-      // Count products by category
       const categoryProductCounts = {};
       categories.forEach(category => {
         categoryProductCounts[category.id] = {
@@ -146,19 +145,16 @@ const ResponsiveDashboard = () => {
         };
       });
 
-      // Count products in each category
       products.forEach(product => {
         if (product.categoryId && categoryProductCounts[product.categoryId]) {
           categoryProductCounts[product.categoryId].value += 1;
         }
       });
 
-      // Convert to array for pie chart
       const categoryData = Object.values(categoryProductCounts)
         .filter(category => category.value > 0)
         .sort((a, b) => b.value - a.value);
       
-      // If there's no categorized products, add an "Uncategorized" entry
       if (categoryData.length === 0 && products.length > 0) {
         categoryData.push({ name: 'Uncategorized', value: products.length });
       }
@@ -171,20 +167,14 @@ const ResponsiveDashboard = () => {
     }
   };
 
-  // Limit data points for large screens to avoid crowding
   const limitDataPoints = (data) => {
     if (!data || data.length <= 6) return data;
     
-    // Always keep first and last point
     const result = [data[0]];
-    
-    // Add evenly spaced points in between
-    const step = Math.ceil((data.length - 2) / 4); // We want around 6 points total
+    const step = Math.ceil((data.length - 2) / 4);
     for (let i = step; i < data.length - 1; i += step) {
       result.push(data[i]);
     }
-    
-    // Add the last point
     result.push(data[data.length - 1]);
     
     return result;
@@ -197,17 +187,14 @@ const ResponsiveDashboard = () => {
       });
       
       if (Array.isArray(response.data)) {
-        // Format data for the chart
         const formattedHistory = response.data.map(item => ({
           timestamp: new Date(item.timestamp),
           label: formatDateLabel(item.timestamp),
           totalQuantity: item.totalQuantity
         }));
         
-        // Sort by timestamp
         formattedHistory.sort((a, b) => a.timestamp - b.timestamp);
         
-        // Use our helper to limit data points for large screens
         const processedData = isXs || isSm 
           ? formattedHistory
           : limitDataPoints(formattedHistory);
@@ -216,38 +203,22 @@ const ResponsiveDashboard = () => {
       }
     } catch (error) {
       console.error('Error fetching inventory history:', error);
-      
-      // If API fails, generate sample data for demo purposes
-      const today = new Date();
-      const sampleData = Array.from({ length: 6 }, (_, i) => {
-        const date = new Date(today);
-        date.setDate(date.getDate() - (5 - i));
-        return {
-          timestamp: date,
-          label: formatDateLabel(date),
-          totalQuantity: Math.floor(stats.totalQuantity * (0.93 + (i * 0.01)))
-        };
-      });
-      
-      setInventoryHistory(sampleData);
+      setInventoryHistory([]);
     }
   };
 
-  // Helper to format date labels with time
   const formatDateLabel = (dateStr) => {
     const date = new Date(dateStr);
     const month = date.toLocaleString('en-US', { month: 'short' });
     const day = date.getDate();
     
-    // Format time (hour and minute)
     const hours = date.getHours();
     const minutes = date.getMinutes();
-    const formattedHours = hours % 12 || 12; // Convert to 12-hour format
+    const formattedHours = hours % 12 || 12;
     const ampm = hours >= 12 ? 'PM' : 'AM';
     const formattedMinutes = minutes.toString().padStart(2, '0');
     const timeStr = `${formattedHours}:${formattedMinutes}${ampm}`;
     
-    // For desktop view, show more detailed format
     if (!isXs && !isSm) {
       const currentYear = new Date().getFullYear();
       const labelYear = date.getFullYear();
@@ -259,7 +230,6 @@ const ResponsiveDashboard = () => {
       return `${month} ${day} ${timeStr}`;
     }
     
-    // For mobile, show more compact format
     return isXs ? `${month}${day} ${formattedHours}${ampm}` : `${month} ${day} ${formattedHours}${ampm}`;
   };
 
@@ -295,32 +265,33 @@ const ResponsiveDashboard = () => {
     }
   };
 
-
-// Calculate percentage change for stats cards
-const calculateGrowth = (current, previous) => {
-  // Handle edge cases
-  if (previous === 0 && current === 0) {
-    return { percentage: 0, positive: true };
-  }
-  
-  if (previous === 0) {
-    return { percentage: current > 0 ? 100 : 0, positive: true };
-  }
-  
-  const change = current - previous;
-  const percentage = Math.abs(Math.round((change / previous) * 100));
-  
-  // For low stock items, decrease is positive (improvement)
-  const isLowStockMetric = current === stats.lowStockCount && previous === stats.previousLowStockCount;
-  const positive = isLowStockMetric ? change <= 0 : change >= 0;
-  
-  return {
-    percentage: percentage || 0,
-    positive: positive
+  const calculateGrowth = (current, previous) => {
+    if (previous === null || previous === undefined) {
+      return { percentage: null, positive: true, hasData: false };
+    }
+    
+    if (previous === 0 && current === 0) {
+      return { percentage: 0, positive: true, hasData: true };
+    }
+    
+    if (previous === 0) {
+      return { percentage: current > 0 ? 100 : 0, positive: true, hasData: true };
+    }
+    
+    const change = current - previous;
+    const percentage = Math.abs(Math.round((change / previous) * 100));
+    
+    const isLowStockMetric = current === stats.lowStockCount && previous === stats.previousLowStockCount;
+    const positive = isLowStockMetric ? change <= 0 : change >= 0;
+    
+    return {
+      percentage: percentage || 0,
+      positive: positive,
+      hasData: true
+    };
   };
-};
 
-  if (loading && Object.values(stats).every(val => val === 0 || (Array.isArray(val) && val.length === 0))) {
+  if (loading && Object.values(stats).every(val => val === 0 || val === null || (Array.isArray(val) && val.length === 0))) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
         <CircularProgress size={60} />
@@ -328,13 +299,12 @@ const calculateGrowth = (current, previous) => {
     );
   }
 
-  // Calculate real growth indicators based on historical data
   const productGrowth = calculateGrowth(stats.productCount, stats.previousProductCount);
   const categoryGrowth = calculateGrowth(stats.categoryCount, stats.previousCategoryCount);
   const supplierGrowth = calculateGrowth(stats.supplierCount, stats.previousSupplierCount);
   const lowStockGrowth = calculateGrowth(stats.lowStockCount, stats.previousLowStockCount);
+  const totalQuantityGrowth = calculateGrowth(stats.totalQuantity, stats.previousTotalQuantity);
 
-  // Responsive sizing for pie chart
   const getPieChartSize = () => {
     if (isXs) return { innerRadius: 40, outerRadius: 60 };
     if (isSm) return { innerRadius: 50, outerRadius: 70 };
@@ -352,7 +322,6 @@ const calculateGrowth = (current, previous) => {
       }}
     >
       <Container maxWidth="xl" sx={{ overflow: 'hidden' }}>
-        {/* Dashboard Header */}
         <Box 
           sx={{ 
             display: 'flex', 
@@ -419,7 +388,6 @@ const calculateGrowth = (current, previous) => {
           </Box>
         </Box>
 
-        {/* Stats Cards */}
         <Grid container spacing={2} sx={{ mb: 3 }}>
           <Grid item xs={12} sm={6} md={3}>
             <Paper 
@@ -492,12 +460,18 @@ const calculateGrowth = (current, previous) => {
                     fontSize: { xs: '0.7rem', md: '0.75rem' }
                   }}
                 >
-                  {productGrowth.positive ? (
-                    <ArrowUpwardIcon fontSize="small" sx={{ mr: 0.5, fontSize: { xs: '0.8rem', md: '1rem' } }} />
+                  {productGrowth.hasData ? (
+                    <>
+                      {productGrowth.positive ? (
+                        <ArrowUpwardIcon fontSize="small" sx={{ mr: 0.5, fontSize: { xs: '0.8rem', md: '1rem' } }} />
+                      ) : (
+                        <ArrowDownwardIcon fontSize="small" sx={{ mr: 0.5, fontSize: { xs: '0.8rem', md: '1rem' } }} />
+                      )}
+                      {productGrowth.percentage}% {productGrowth.positive ? 'increase' : 'decrease'} this month
+                    </>
                   ) : (
-                    <ArrowDownwardIcon fontSize="small" sx={{ mr: 0.5, fontSize: { xs: '0.8rem', md: '1rem' } }} />
+                    'No historical data available'
                   )}
-                  {productGrowth.percentage}% {productGrowth.positive ? 'increase' : 'decrease'} this month
                 </Typography>
               </Box>
             </Paper>
@@ -574,14 +548,20 @@ const calculateGrowth = (current, previous) => {
                     fontSize: { xs: '0.7rem', md: '0.75rem' }
                   }}
                 >
-                  {categoryGrowth.positive ? (
-                    <ArrowUpwardIcon fontSize="small" sx={{ mr: 0.5, fontSize: { xs: '0.8rem', md: '1rem' } }} />
+                  {categoryGrowth.hasData ? (
+                    <>
+                      {categoryGrowth.positive ? (
+                        <ArrowUpwardIcon fontSize="small" sx={{ mr: 0.5, fontSize: { xs: '0.8rem', md: '1rem' } }} />
+                      ) : (
+                        <ArrowDownwardIcon fontSize="small" sx={{ mr: 0.5, fontSize: { xs: '0.8rem', md: '1rem' } }} />
+                      )}
+                      {categoryGrowth.percentage > 0 
+                        ? `${categoryGrowth.percentage}% ${categoryGrowth.positive ? 'growth' : 'reduction'} in categories` 
+                        : 'No change in categories'}
+                    </>
                   ) : (
-                    <ArrowDownwardIcon fontSize="small" sx={{ mr: 0.5, fontSize: { xs: '0.8rem', md: '1rem' } }} />
+                    'No historical data available'
                   )}
-                  {categoryGrowth.percentage > 0 
-                    ? `${categoryGrowth.percentage}% ${categoryGrowth.positive ? 'growth' : 'reduction'} in categories` 
-                    : 'No change in categories'}
                 </Typography>
               </Box>
             </Paper>
@@ -659,14 +639,20 @@ const calculateGrowth = (current, previous) => {
                     textAlign: 'center'
                   }}
                 >
-                  {supplierGrowth.positive ? (
-                    <ArrowUpwardIcon fontSize="small" sx={{ mr: 0.5, fontSize: { xs: '0.8rem', md: '1rem' } }} />
+                  {supplierGrowth.hasData ? (
+                    <>
+                      {supplierGrowth.positive ? (
+                        <ArrowUpwardIcon fontSize="small" sx={{ mr: 0.5, fontSize: { xs: '0.8rem', md: '1rem' } }} />
+                      ) : (
+                        <ArrowDownwardIcon fontSize="small" sx={{ mr: 0.5, fontSize: { xs: '0.8rem', md: '1rem' } }} />
+                      )}
+                      {supplierGrowth.percentage > 0 
+                        ? `${supplierGrowth.percentage}% ${supplierGrowth.positive ? 'increase' : 'decrease'} in suppliers` 
+                        : 'No change in suppliers'}
+                    </>
                   ) : (
-                    <ArrowDownwardIcon fontSize="small" sx={{ mr: 0.5, fontSize: { xs: '0.8rem', md: '1rem' } }} />
+                    'No historical data available'
                   )}
-                  {supplierGrowth.percentage > 0 
-                    ? `${supplierGrowth.percentage}% ${supplierGrowth.positive ? 'increase' : 'decrease'} in suppliers` 
-                    : 'No change in suppliers'}
                 </Typography>
               </Box>
             </Paper>
@@ -744,16 +730,20 @@ const calculateGrowth = (current, previous) => {
                     textAlign: 'center'
                   }}
                 >
-                  {!lowStockGrowth.positive ? (
-                    <>
-                      <ArrowDownwardIcon fontSize="small" sx={{ mr: 0.5, color: '#27ae60', fontSize: { xs: '0.8rem', md: '1rem' } }} />
-                      {lowStockGrowth.percentage}% decrease in low stock
-                    </>
+                  {lowStockGrowth.hasData ? (
+                    !lowStockGrowth.positive ? (
+                      <>
+                        <ArrowDownwardIcon fontSize="small" sx={{ mr: 0.5, color: '#27ae60', fontSize: { xs: '0.8rem', md: '1rem' } }} />
+                        {lowStockGrowth.percentage}% decrease in low stock
+                      </>
+                    ) : (
+                      <>
+                        <ArrowUpwardIcon fontSize="small" sx={{ mr: 0.5, color: '#e74c3c', fontSize: { xs: '0.8rem', md: '1rem' } }} />
+                        {lowStockGrowth.percentage}% increase in low stock
+                      </>
+                    )
                   ) : (
-                    <>
-                      <ArrowUpwardIcon fontSize="small" sx={{ mr: 0.5, color: '#e74c3c', fontSize: { xs: '0.8rem', md: '1rem' } }} />
-                      {lowStockGrowth.percentage}% increase in low stock
-                    </>
+                    'No historical data available'
                   )}
                 </Typography>
               </Box>
@@ -761,7 +751,6 @@ const calculateGrowth = (current, previous) => {
           </Grid>
         </Grid>
 
-        {/* Charts and Data Visualization Section */}
         <Grid container spacing={2} sx={{ mb: 3 }}>
           <Grid item xs={12} lg={8}>
             <Paper 
@@ -798,7 +787,6 @@ const calculateGrowth = (current, previous) => {
                         bottom: isXs ? 40 : (isSm ? 30 : 25) 
                       }}
                     >
-                      {/* Add custom grid lines optimized for each screen size */}
                       <CartesianGrid 
                         strokeDasharray="3 3" 
                         stroke="#f0f0f0" 
@@ -818,12 +806,11 @@ const calculateGrowth = (current, previous) => {
                         tickMargin={isXs ? 15 : (isSm ? 12 : 10)}
                         padding={{ left: 10, right: 10 }}
                         tickFormatter={(value) => {
-                          // For extremely small screens, truncate even more
                           if (isXs && value.length > 10) return value.substring(0, 10) + '...';
                           return value;
                         }}
                       />
-                        <YAxis 
+                      <YAxis 
                         tick={{ 
                           fill: '#666', 
                           fontSize: isXs ? 10 : 12 
@@ -895,7 +882,7 @@ const calculateGrowth = (current, previous) => {
                 justifyContent: 'center', 
                 alignItems: 'center' 
               }}>
-                                  <Box sx={{ 
+                <Box sx={{ 
                   width: '100%', 
                   mb: 2, 
                   display: 'flex', 
@@ -933,7 +920,7 @@ const calculateGrowth = (current, previous) => {
                           textOverflow: 'ellipsis'
                         }}
                       >
-                        {entry.name} ({Math.round(entry.value / stats.productCount * 100)}%)
+                        {entry.name} ({stats.productCount > 0 ? Math.round(entry.value / stats.productCount * 100) : 0}%)
                       </Typography>
                     </Box>
                   ))}
@@ -957,7 +944,7 @@ const calculateGrowth = (current, previous) => {
                         ))}
                       </Pie>
                       <Tooltip 
-                        formatter={(value, name) => [`${value} items (${Math.round(value / stats.productCount * 100)}%)`, name]}
+                        formatter={(value, name) => [`${value} items (${stats.productCount > 0 ? Math.round(value / stats.productCount * 100) : 0}%)`, name]}
                         contentStyle={{ 
                           borderRadius: '8px',
                           boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
@@ -978,7 +965,6 @@ const calculateGrowth = (current, previous) => {
           </Grid>
         </Grid>
 
-        {/* Low Stock Items Section */}
         <Paper 
           elevation={2} 
           sx={{ 
@@ -1017,7 +1003,7 @@ const calculateGrowth = (current, previous) => {
                     border: '1px solid rgba(231, 76, 60, 0.2)'
                   }}
                 >
-                                      <ListItem 
+                  <ListItem 
                     alignItems="flex-start"
                     sx={{
                       flexDirection: { xs: 'column', sm: 'row' },
@@ -1146,8 +1132,7 @@ const calculateGrowth = (current, previous) => {
           )}
         </Paper>
 
-        {/* Inventory Summary Section */}
-                        <Grid container spacing={2} sx={{ width: '100%', m: 0 }}>
+        <Grid container spacing={2} sx={{ width: '100%', m: 0 }}>
           <Grid item xs={12} md={6}>
             <Paper 
               elevation={2} 
@@ -1194,18 +1179,30 @@ const calculateGrowth = (current, previous) => {
                         Total items in stock
                       </Typography>
                       <Box sx={{ mt: 1, display: 'flex', alignItems: 'center' }}>
-                        {calculateGrowth(stats.totalQuantity, stats.previousTotalQuantity).positive ? (
-                          <ArrowUpwardIcon fontSize="small" sx={{ mr: 0.5, color: 'success.main', fontSize: { xs: '0.8rem', md: '1rem' } }} />
+                        {totalQuantityGrowth.hasData ? (
+                          <>
+                            {totalQuantityGrowth.positive ? (
+                              <ArrowUpwardIcon fontSize="small" sx={{ mr: 0.5, color: 'success.main', fontSize: { xs: '0.8rem', md: '1rem' } }} />
+                            ) : (
+                              <ArrowDownwardIcon fontSize="small" sx={{ mr: 0.5, color: 'error.main', fontSize: { xs: '0.8rem', md: '1rem' } }} />
+                            )}
+                            <Typography 
+                              variant="caption" 
+                              color={totalQuantityGrowth.positive ? 'success.main' : 'error.main'}
+                              fontSize={{ xs: '0.7rem', md: '0.75rem' }}
+                            >
+                              {totalQuantityGrowth.percentage}% from last period
+                            </Typography>
+                          </>
                         ) : (
-                          <ArrowDownwardIcon fontSize="small" sx={{ mr: 0.5, color: 'error.main', fontSize: { xs: '0.8rem', md: '1rem' } }} />
+                          <Typography 
+                            variant="caption" 
+                            color="text.secondary"
+                            fontSize={{ xs: '0.7rem', md: '0.75rem' }}
+                          >
+                            No historical data available
+                          </Typography>
                         )}
-                        <Typography 
-                          variant="caption" 
-                          color={calculateGrowth(stats.totalQuantity, stats.previousTotalQuantity).positive ? 'success.main' : 'error.main'}
-                          fontSize={{ xs: '0.7rem', md: '0.75rem' }}
-                        >
-                          {calculateGrowth(stats.totalQuantity, stats.previousTotalQuantity).percentage}% from last period
-                        </Typography>
                       </Box>
                     </CardContent>
                   </Card>
@@ -1369,7 +1366,6 @@ const calculateGrowth = (current, previous) => {
                           top: '50%',
                           left: '50%',
                           transform: 'translate(-50%, -50%)',
-                          color: 'text.primary',
                           fontWeight: 'bold',
                           mixBlendMode: 'difference',
                           color: 'white',

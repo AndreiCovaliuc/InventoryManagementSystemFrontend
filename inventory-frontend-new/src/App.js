@@ -20,6 +20,7 @@ import TransactionForm from './components/transactions/TransactionForm';
 import { AuthProvider } from './context/AuthContext';
 import ChatList from './components/chat/ChatList';
 import ChatDetail from './components/chat/ChatDetail';
+import CompanyRegister from './components/auth/CompanyRegister';
 import './App.css';
 
 function App() {
@@ -39,6 +40,7 @@ function App() {
 } />
             {/* Public routes */}
             <Route path="/login" element={<Login />} />
+            <Route path="/register-company" element={<CompanyRegister />} />
             {/* Chat routes */}
 <Route
   path="/chat"
