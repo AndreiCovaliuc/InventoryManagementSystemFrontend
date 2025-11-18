@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { 
   Box, 
   Typography, 
@@ -27,7 +27,9 @@ import {
   Add as AddIcon,
   Clear as ClearIcon,
   ChatBubbleOutline as ChatBubbleIcon,
-  PersonAdd as PersonAddIcon
+  PersonAdd as PersonAddIcon,
+  Send as SendIcon,
+  ArrowBack as ArrowBackIcon
 } from '@mui/icons-material';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
@@ -48,14 +50,25 @@ const ChatList = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [newChatDialogOpen, setNewChatDialogOpen] = useState(false);
+  
+  // New state for inline chat
+  const [selectedChatId, setSelectedChatId] = useState(null);
+  const [selectedChat, setSelectedChat] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [messageInput, setMessageInput] = useState('');
+  const [loadingMessages, setLoadingMessages] = useState(false);
+  const messagesEndRef = useRef(null);
 
   useEffect(() => {
     fetchChats();
     const interval = setInterval(() => {
       fetchChats(false);
+      if (selectedChatId) {
+        fetchMessages(selectedChatId, false);
+      }
     }, 10000);
     return () => clearInterval(interval);
-  }, []);
+  }, [selectedChatId]);
 
   useEffect(() => {
     if (chats.length > 0) {
@@ -63,16 +76,44 @@ const ChatList = () => {
     }
   }, [searchTerm, chats]);
 
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   const fetchChats = async (showLoading = true) => {
     if (showLoading) setLoading(true);
     try {
       const response = await ChatService.getAllChats();
       setChats(response.data || []);
       setFilteredChats(response.data || []);
+      
+      // Update selected chat info if it's open
+      if (selectedChatId && response.data) {
+        const updatedChat = response.data.find(c => c.id === selectedChatId);
+        if (updatedChat) {
+          setSelectedChat(updatedChat);
+        }
+      }
     } catch (error) {
       console.error('Error fetching chats:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchMessages = async (chatId, showLoading = true) => {
+    if (showLoading) setLoadingMessages(true);
+    try {
+      const response = await ChatService.getMessages(chatId);
+      setMessages(response.data || []);
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+    } finally {
+      setLoadingMessages(false);
     }
   };
 
@@ -89,8 +130,44 @@ const ChatList = () => {
     setFilteredChats(filtered);
   };
 
-  const handleChatItemClick = (chatId) => {
-    navigate(`/chat/${chatId}`);
+  const handleChatItemClick = async (chat) => {
+    setSelectedChatId(chat.id);
+    setSelectedChat(chat);
+    await fetchMessages(chat.id);
+    
+    // Mark as read
+    try {
+      await ChatService.markAsRead(chat.id);
+      fetchChats(false); // Refresh chat list to update unread status
+    } catch (error) {
+      console.error('Error marking as read:', error);
+    }
+  };
+
+  const handleSendMessage = async () => {
+    if (!messageInput.trim() || !selectedChatId) return;
+
+    try {
+      const response = await ChatService.sendMessage(selectedChatId, messageInput.trim());
+      setMessages([...messages, response.data]);
+      setMessageInput('');
+      fetchChats(false); // Refresh to update last message
+    } catch (error) {
+      console.error('Error sending message:', error);
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  const handleBackToList = () => {
+    setSelectedChatId(null);
+    setSelectedChat(null);
+    setMessages([]);
   };
 
   const handleOpenNewChatDialog = () => {
@@ -105,7 +182,12 @@ const ChatList = () => {
     try {
       const response = await ChatService.createChat(userId);
       handleCloseNewChatDialog();
-      navigate(`/chat/${response.data.id}`);
+      const newChat = response.data;
+      
+      // Add to chats list and select it
+      setChats([newChat, ...chats]);
+      setFilteredChats([newChat, ...filteredChats]);
+      handleChatItemClick(newChat);
     } catch (error) {
       console.error('Error creating new chat:', error);
     }
@@ -125,6 +207,12 @@ const ChatList = () => {
     if (diffHours < 24) return `${diffHours}h`;
     if (diffDays < 7) return `${diffDays}d`;
     return messageTime.toLocaleDateString();
+  };
+
+  const formatMessageTime = (timestamp) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
   };
 
   const getUnreadCount = () => {
@@ -375,23 +463,30 @@ const ChatList = () => {
                         <Box>
                           <ListItem 
                             button
-                            onClick={() => handleChatItemClick(chat.id)}
+                            onClick={() => handleChatItemClick(chat)}
+                            selected={selectedChatId === chat.id}
                             sx={{
                               borderRadius: '12px',
                               mb: 0.5,
                               px: 2,
                               py: 1.5,
                               transition: 'all 0.2s ease',
-                              backgroundColor: chat.hasUnread 
-                                ? 'rgba(52, 152, 219, 0.08)' 
-                                : 'transparent',
-                              border: chat.hasUnread 
-                                ? '1px solid rgba(52, 152, 219, 0.2)'
-                                : '1px solid transparent',
+                              backgroundColor: selectedChatId === chat.id
+                                ? 'rgba(52, 152, 219, 0.15)'
+                                : chat.hasUnread 
+                                  ? 'rgba(52, 152, 219, 0.08)' 
+                                  : 'transparent',
+                              border: selectedChatId === chat.id
+                                ? '1px solid rgba(52, 152, 219, 0.4)'
+                                : chat.hasUnread 
+                                  ? '1px solid rgba(52, 152, 219, 0.2)'
+                                  : '1px solid transparent',
                               '&:hover': {
-                                backgroundColor: chat.hasUnread
-                                  ? 'rgba(52, 152, 219, 0.12)'
-                                  : 'rgba(0, 0, 0, 0.04)',
+                                backgroundColor: selectedChatId === chat.id
+                                  ? 'rgba(52, 152, 219, 0.2)'
+                                  : chat.hasUnread
+                                    ? 'rgba(52, 152, 219, 0.12)'
+                                    : 'rgba(0, 0, 0, 0.04)',
                                 transform: 'translateX(4px)',
                               }
                             }}
@@ -514,114 +609,353 @@ const ChatList = () => {
           </Grow>
         </Grid>
         
-        {/* Welcome Panel */}
+        {/* Chat Conversation / Welcome Panel */}
         <Grid item xs={12} md={8}>
           <Grow in={true} timeout={1000}>
             <Paper 
               elevation={0} 
               sx={{ 
                 borderRadius: '16px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
                 height: 'calc(100vh - 200px)',
-                background: 'linear-gradient(135deg, rgba(52, 152, 219, 0.03) 0%, rgba(41, 128, 185, 0.08) 100%)',
                 boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
                 border: '1px solid rgba(255, 255, 255, 0.5)',
-                position: 'relative',
+                display: 'flex',
+                flexDirection: 'column',
                 overflow: 'hidden',
-                '&::before': {
-                  content: '""',
-                  position: 'absolute',
-                  top: -50,
-                  right: -50,
-                  width: 200,
-                  height: 200,
-                  borderRadius: '50%',
-                  background: 'radial-gradient(circle, rgba(52, 152, 219, 0.1) 0%, transparent 70%)',
-                },
-                '&::after': {
-                  content: '""',
-                  position: 'absolute',
-                  bottom: -80,
-                  left: -80,
-                  width: 250,
-                  height: 250,
-                  borderRadius: '50%',
-                  background: 'radial-gradient(circle, rgba(0, 210, 255, 0.08) 0%, transparent 70%)',
-                },
               }}
             >
-              <Box
-                sx={{
-                  width: 120,
-                  height: 120,
-                  borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #3498db 0%, #2980b9 100%)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  mb: 4,
-                  boxShadow: '0 12px 40px rgba(52, 152, 219, 0.3)',
-                  position: 'relative',
-                  zIndex: 1,
-                }}
-              >
-                <MessageIcon sx={{ fontSize: 56, color: 'white' }} />
-              </Box>
-              <Typography 
-                variant="h4" 
-                sx={{ 
-                  fontWeight: 700,
-                  color: '#2c3e50',
-                  mb: 2,
-                  position: 'relative',
-                  zIndex: 1,
-                }}
-              >
-                Welcome to Chat
-              </Typography>
-              <Typography 
-                variant="body1" 
-                color="text.secondary" 
-                align="center" 
-                sx={{ 
-                  maxWidth: '60%', 
-                  mb: 4,
-                  lineHeight: 1.6,
-                  position: 'relative',
-                  zIndex: 1,
-                }}
-              >
-                Select a conversation from the sidebar or start a new chat to begin messaging with your team members.
-              </Typography>
-              <Button
-                variant="contained"
-                size="large"
-                startIcon={<AddIcon />}
-                onClick={handleOpenNewChatDialog}
-                sx={{ 
-                  background: 'linear-gradient(135deg, #3498db 0%, #2980b9 100%)',
-                  '&:hover': { 
-                    background: 'linear-gradient(135deg, #2980b9 0%, #1f5f89 100%)',
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 8px 24px rgba(52, 152, 219, 0.4)',
-                  },
-                  fontWeight: 600,
-                  textTransform: 'none',
-                  borderRadius: '12px',
-                  px: 4,
-                  py: 1.5,
-                  fontSize: '1rem',
-                  boxShadow: '0 4px 16px rgba(52, 152, 219, 0.3)',
-                  transition: 'all 0.3s ease',
-                  position: 'relative',
-                  zIndex: 1,
-                }}
-              >
-                Start New Conversation
-              </Button>
+              {selectedChat ? (
+                // Chat Conversation View
+                <>
+                  {/* Chat Header */}
+                  <Box 
+                    sx={{ 
+                      p: 2,
+                      background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+                      borderBottom: '1px solid rgba(0, 0, 0, 0.06)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 2,
+                    }}
+                  >
+                    <IconButton 
+                      onClick={handleBackToList}
+                      sx={{ 
+                        display: { xs: 'flex', md: 'none' },
+                        color: '#3498db',
+                      }}
+                    >
+                      <ArrowBackIcon />
+                    </IconButton>
+                    <Badge
+                      overlap="circular"
+                      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                      variant="dot"
+                      sx={{
+                        '& .MuiBadge-badge': {
+                          backgroundColor: selectedChat.otherParticipant.online 
+                            ? '#44b700' 
+                            : '#95a5a6',
+                          boxShadow: '0 0 0 2px white',
+                          width: 12,
+                          height: 12,
+                          borderRadius: '50%',
+                        },
+                      }}
+                    >
+                      <Avatar 
+                        sx={{ 
+                          width: 48,
+                          height: 48,
+                          background: 'linear-gradient(135deg, #3498db 0%, #2980b9 100%)',
+                          fontSize: '1.1rem',
+                          fontWeight: 600,
+                        }}
+                      >
+                        {selectedChat.otherParticipant.name.charAt(0).toUpperCase()}
+                      </Avatar>
+                    </Badge>
+                    <Box sx={{ flexGrow: 1 }}>
+                      <Typography variant="h6" sx={{ fontWeight: 600, color: '#2c3e50' }}>
+                        {selectedChat.otherParticipant.name}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                        {selectedChat.otherParticipant.online ? 'Online' : 'Offline'}
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  {/* Messages Area */}
+                  <Box 
+                    sx={{ 
+                      flexGrow: 1,
+                      overflowY: 'auto',
+                      p: 3,
+                      background: 'linear-gradient(135deg, rgba(52, 152, 219, 0.02) 0%, rgba(41, 128, 185, 0.05) 100%)',
+                      '&::-webkit-scrollbar': {
+                        width: '6px',
+                      },
+                      '&::-webkit-scrollbar-track': {
+                        background: 'transparent',
+                      },
+                      '&::-webkit-scrollbar-thumb': {
+                        background: 'rgba(52, 152, 219, 0.3)',
+                        borderRadius: '10px',
+                      },
+                    }}
+                  >
+                    {loadingMessages ? (
+                      <Box sx={{ 
+                        display: 'flex', 
+                        justifyContent: 'center', 
+                        alignItems: 'center', 
+                        height: '100%' 
+                      }}>
+                        <CircularProgress size={40} sx={{ color: '#3498db' }} />
+                      </Box>
+                    ) : messages.length === 0 ? (
+                      <Box sx={{ 
+                        display: 'flex', 
+                        flexDirection: 'column',
+                        justifyContent: 'center', 
+                        alignItems: 'center', 
+                        height: '100%',
+                      }}>
+                        <MessageIcon sx={{ fontSize: 48, color: '#bdc3c7', mb: 2 }} />
+                        <Typography variant="body1" color="text.secondary">
+                          No messages yet. Start the conversation!
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <Box>
+                        {messages.map((msg, index) => {
+                          const isOwnMessage = msg.senderId === currentUser?.id;
+                          return (
+                            <Fade in={true} timeout={300} key={msg.id || index}>
+                              <Box
+                                sx={{
+                                  display: 'flex',
+                                  justifyContent: isOwnMessage ? 'flex-end' : 'flex-start',
+                                  mb: 2,
+                                }}
+                              >
+                                <Box
+                                  sx={{
+                                    maxWidth: '70%',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: isOwnMessage ? 'flex-end' : 'flex-start',
+                                  }}
+                                >
+                                  <Box
+                                    sx={{
+                                      background: isOwnMessage
+                                        ? 'linear-gradient(135deg, #3498db 0%, #2980b9 100%)'
+                                        : '#ffffff',
+                                      color: isOwnMessage ? '#ffffff' : '#2c3e50',
+                                      borderRadius: isOwnMessage
+                                        ? '18px 18px 4px 18px'
+                                        : '18px 18px 18px 4px',
+                                      px: 2.5,
+                                      py: 1.5,
+                                      boxShadow: isOwnMessage
+                                        ? '0 4px 12px rgba(52, 152, 219, 0.3)'
+                                        : '0 2px 8px rgba(0, 0, 0, 0.1)',
+                                      wordBreak: 'break-word',
+                                    }}
+                                  >
+                                    <Typography variant="body1">
+                                      {msg.content}
+                                    </Typography>
+                                  </Box>
+                                  <Typography 
+                                    variant="caption" 
+                                    sx={{ 
+                                      color: 'text.secondary', 
+                                      mt: 0.5,
+                                      px: 1,
+                                    }}
+                                  >
+                                    {formatMessageTime(msg.timestamp)}
+                                  </Typography>
+                                </Box>
+                              </Box>
+                            </Fade>
+                          );
+                        })}
+                        <div ref={messagesEndRef} />
+                      </Box>
+                    )}
+                  </Box>
+
+                  {/* Message Input */}
+                  <Box 
+                    sx={{ 
+                      p: 2,
+                      background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+                      borderTop: '1px solid rgba(0, 0, 0, 0.06)',
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <TextField
+                        fullWidth
+                        multiline
+                        maxRows={4}
+                        placeholder="Type a message..."
+                        value={messageInput}
+                        onChange={(e) => setMessageInput(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: '12px',
+                            backgroundColor: '#f0f2f5',
+                            '& fieldset': {
+                              borderColor: 'transparent',
+                            },
+                            '&:hover fieldset': {
+                              borderColor: 'rgba(52, 152, 219, 0.3)',
+                            },
+                            '&.Mui-focused': {
+                              backgroundColor: '#ffffff',
+                            },
+                            '&.Mui-focused fieldset': {
+                              borderColor: '#3498db',
+                            },
+                          },
+                        }}
+                      />
+                      <IconButton
+                        onClick={handleSendMessage}
+                        disabled={!messageInput.trim()}
+                        sx={{
+                          background: messageInput.trim()
+                            ? 'linear-gradient(135deg, #3498db 0%, #2980b9 100%)'
+                            : '#e0e0e0',
+                          color: '#ffffff',
+                          width: 48,
+                          height: 48,
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            background: messageInput.trim()
+                              ? 'linear-gradient(135deg, #2980b9 0%, #1f5f89 100%)'
+                              : '#e0e0e0',
+                            transform: messageInput.trim() ? 'scale(1.05)' : 'none',
+                          },
+                          '&:disabled': {
+                            color: '#9e9e9e',
+                          },
+                        }}
+                      >
+                        <SendIcon />
+                      </IconButton>
+                    </Box>
+                  </Box>
+                </>
+              ) : (
+                // Welcome Panel
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    height: '100%',
+                    background: 'linear-gradient(135deg, rgba(52, 152, 219, 0.03) 0%, rgba(41, 128, 185, 0.08) 100%)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: -50,
+                      right: -50,
+                      width: 200,
+                      height: 200,
+                      borderRadius: '50%',
+                      background: 'radial-gradient(circle, rgba(52, 152, 219, 0.1) 0%, transparent 70%)',
+                    },
+                    '&::after': {
+                      content: '""',
+                      position: 'absolute',
+                      bottom: -80,
+                      left: -80,
+                      width: 250,
+                      height: 250,
+                      borderRadius: '50%',
+                      background: 'radial-gradient(circle, rgba(0, 210, 255, 0.08) 0%, transparent 70%)',
+                    },
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: 120,
+                      height: 120,
+                      borderRadius: '50%',
+                      background: 'linear-gradient(135deg, #3498db 0%, #2980b9 100%)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      mb: 4,
+                      boxShadow: '0 12px 40px rgba(52, 152, 219, 0.3)',
+                      position: 'relative',
+                      zIndex: 1,
+                    }}
+                  >
+                    <MessageIcon sx={{ fontSize: 56, color: 'white' }} />
+                  </Box>
+                  <Typography 
+                    variant="h4" 
+                    sx={{ 
+                      fontWeight: 700,
+                      color: '#2c3e50',
+                      mb: 2,
+                      position: 'relative',
+                      zIndex: 1,
+                    }}
+                  >
+                    Welcome to Chat
+                  </Typography>
+                  <Typography 
+                    variant="body1" 
+                    color="text.secondary" 
+                    align="center" 
+                    sx={{ 
+                      maxWidth: '60%', 
+                      mb: 4,
+                      lineHeight: 1.6,
+                      position: 'relative',
+                      zIndex: 1,
+                    }}
+                  >
+                    Select a conversation from the sidebar or start a new chat to begin messaging with your team members.
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    size="large"
+                    startIcon={<AddIcon />}
+                    onClick={handleOpenNewChatDialog}
+                    sx={{ 
+                      background: 'linear-gradient(135deg, #3498db 0%, #2980b9 100%)',
+                      '&:hover': { 
+                        background: 'linear-gradient(135deg, #2980b9 0%, #1f5f89 100%)',
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 8px 24px rgba(52, 152, 219, 0.4)',
+                      },
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      borderRadius: '12px',
+                      px: 4,
+                      py: 1.5,
+                      fontSize: '1rem',
+                      boxShadow: '0 4px 16px rgba(52, 152, 219, 0.3)',
+                      transition: 'all 0.3s ease',
+                      position: 'relative',
+                      zIndex: 1,
+                    }}
+                  >
+                    Start New Conversation
+                  </Button>
+                </Box>
+              )}
             </Paper>
           </Grow>
         </Grid>

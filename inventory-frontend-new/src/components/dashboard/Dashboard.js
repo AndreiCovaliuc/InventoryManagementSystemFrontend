@@ -17,7 +17,8 @@ import {
   CircularProgress,
   useTheme,
   useMediaQuery,
-  Container
+  Container,
+  Grow
 } from '@mui/material';
 import {
   Inventory as InventoryIcon,
@@ -312,1107 +313,1109 @@ const ResponsiveDashboard = () => {
   };
 
   return (
-    <Box 
-      sx={{ 
-        padding: { xs: 1, sm: 2, md: 3 },
-        backgroundColor: '#f8f9fa',
-        minHeight: '100vh',
-        maxWidth: '100vw',
-        overflowX: 'hidden'
-      }}
-    >
-      <Container maxWidth="xl" sx={{ overflow: 'hidden' }}>
-        <Box 
-          sx={{ 
-            display: 'flex', 
-            flexDirection: { xs: 'column', sm: 'row' }, 
-            justifyContent: 'space-between', 
-            alignItems: { xs: 'flex-start', sm: 'center' }, 
-            mb: { xs: 2, sm: 4 },
-            gap: { xs: 2, sm: 0 }
-          }}
-        >
-          <Typography 
-            variant={isXs ? "h5" : "h4"}
+    <Grow in={true} timeout={500}>
+      <Box 
+        sx={{ 
+          padding: { xs: 1, sm: 2, md: 3 },
+          backgroundColor: '#f8f9fa',
+          minHeight: '100vh',
+          maxWidth: '100vw',
+          overflowX: 'hidden'
+        }}
+      >
+        <Container maxWidth="xl" sx={{ overflow: 'hidden' }}>
+          <Box 
             sx={{ 
-              fontWeight: 600,
-              backgroundImage: 'linear-gradient(45deg, #3a7bd5, #00d2ff)',
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              fontFamily: "'Poppins', sans-serif"
+              display: 'flex', 
+              flexDirection: { xs: 'column', sm: 'row' }, 
+              justifyContent: 'space-between', 
+              alignItems: { xs: 'flex-start', sm: 'center' }, 
+              mb: { xs: 2, sm: 4 },
+              gap: { xs: 2, sm: 0 }
             }}
           >
-            Inventory Dashboard
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 1, width: { xs: '100%', sm: 'auto' } }}>
-            <Button
-              variant="contained"
-              startIcon={<RefreshIcon />}
-              onClick={() => {
-                fetchData();
-                fetchHistoryData();
-              }}
+            <Typography 
+              variant={isXs ? "h5" : "h4"}
               sx={{ 
-                flex: { xs: 1, sm: 'none' },
-                backgroundColor: '#6c757d',
-                '&:hover': { backgroundColor: '#5a6268' },
-                fontWeight: 500,
-                textTransform: 'none',
-                borderRadius: '8px',
-                fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                fontWeight: 600,
+                backgroundImage: 'linear-gradient(45deg, #3a7bd5, #00d2ff)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                fontFamily: "'Poppins', sans-serif"
               }}
             >
-              {isXs ? "Refresh" : "Refresh Data"}
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={<DownloadIcon />}
-              onClick={handleExport}
-              disabled={exporting}
-              sx={{ 
-                flex: { xs: 1, sm: 'none' },
-                backgroundColor: '#28a745',
-                '&:hover': { backgroundColor: '#218838' },
-                fontWeight: 500,
-                textTransform: 'none',
-                borderRadius: '8px',
-                fontSize: { xs: '0.8rem', sm: '0.875rem' }
-              }}
-            >
-              {exporting 
-                ? (isXs ? "Exporting..." : "Exporting Data...") 
-                : (isXs ? "Export" : "Export to Excel")
-              }
-            </Button>
+              Inventory Dashboard
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 1, width: { xs: '100%', sm: 'auto' } }}>
+              <Button
+                variant="contained"
+                startIcon={<RefreshIcon />}
+                onClick={() => {
+                  fetchData();
+                  fetchHistoryData();
+                }}
+                sx={{ 
+                  flex: { xs: 1, sm: 'none' },
+                  backgroundColor: '#6c757d',
+                  '&:hover': { backgroundColor: '#5a6268' },
+                  fontWeight: 500,
+                  textTransform: 'none',
+                  borderRadius: '8px',
+                  fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                }}
+              >
+                {isXs ? "Refresh" : "Refresh Data"}
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={<DownloadIcon />}
+                onClick={handleExport}
+                disabled={exporting}
+                sx={{ 
+                  flex: { xs: 1, sm: 'none' },
+                  backgroundColor: '#28a745',
+                  '&:hover': { backgroundColor: '#218838' },
+                  fontWeight: 500,
+                  textTransform: 'none',
+                  borderRadius: '8px',
+                  fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                }}
+              >
+                {exporting 
+                  ? (isXs ? "Exporting..." : "Exporting Data...") 
+                  : (isXs ? "Export" : "Export to Excel")
+                }
+              </Button>
+            </Box>
           </Box>
-        </Box>
 
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={12} sm={6} md={3}>
-            <Paper 
-              elevation={2} 
-              sx={{ 
-                borderRadius: '12px',
-                overflow: 'hidden',
-                transition: 'transform 0.3s',
-                height: '100%',
-                '&:hover': {
-                  transform: 'translateY(-5px)'
-                }
-              }}
-            >
-              <Box sx={{ 
-                p: { xs: 1.5, sm: 2 }, 
-                display: 'flex', 
-                alignItems: 'center',
-                backgroundImage: 'linear-gradient(120deg, #3498db, #2980b9)'
-              }}>
-                <Avatar 
-                  sx={{ 
-                    bgcolor: 'rgba(255, 255, 255, 0.2)', 
-                    color: 'white',
-                    width: { xs: 40, sm: 48, md: 56 },
-                    height: { xs: 40, sm: 48, md: 56 }
-                  }}
-                >
-                  <InventoryIcon sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' } }} />
-                </Avatar>
-                <Box sx={{ ml: { xs: 1, sm: 2 } }}>
-                  <Typography 
-                    variant={isXs ? "h5" : "h4"}
-                    component="div" 
-                    sx={{ 
-                      fontWeight: 'bold', 
-                      color: 'white',
-                      fontFamily: "'Montserrat', sans-serif",
-                      fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2.125rem' }
-                    }}
-                  >
-                    {stats.productCount}
-                  </Typography>
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
-                      color: 'rgba(255,255,255,0.8)',
-                      fontFamily: "'Roboto', sans-serif",
-                      fontSize: { xs: '0.75rem', sm: '0.85rem', md: '0.9rem' }
-                    }}
-                  >
-                    Total Products
-                  </Typography>
-                </Box>
-              </Box>
-              <Box 
+          <Grid container spacing={2} sx={{ mb: 3 }}>
+            <Grid item xs={12} sm={6} md={3}>
+              <Paper 
+                elevation={2} 
                 sx={{ 
-                  p: 1, 
-                  backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                  display: 'flex',
-                  justifyContent: 'center'
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  transition: 'transform 0.3s',
+                  height: '100%',
+                  '&:hover': {
+                    transform: 'translateY(-5px)'
+                  }
                 }}
               >
-                <Typography 
-                  variant="caption" 
-                  sx={{ 
-                    display: 'flex', 
-                    alignItems: 'center',
-                    color: '#2980b9',
-                    fontSize: { xs: '0.7rem', md: '0.75rem' }
-                  }}
-                >
-                  {productGrowth.hasData ? (
-                    <>
-                      {productGrowth.positive ? (
-                        <ArrowUpwardIcon fontSize="small" sx={{ mr: 0.5, fontSize: { xs: '0.8rem', md: '1rem' } }} />
-                      ) : (
-                        <ArrowDownwardIcon fontSize="small" sx={{ mr: 0.5, fontSize: { xs: '0.8rem', md: '1rem' } }} />
-                      )}
-                      {productGrowth.percentage}% {productGrowth.positive ? 'increase' : 'decrease'} this month
-                    </>
-                  ) : (
-                    'No historical data available'
-                  )}
-                </Typography>
-              </Box>
-            </Paper>
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={3}>
-            <Paper 
-              elevation={2} 
-              sx={{ 
-                borderRadius: '12px',
-                overflow: 'hidden',
-                transition: 'transform 0.3s',
-                height: '100%',
-                '&:hover': {
-                  transform: 'translateY(-5px)'
-                }
-              }}
-            >
-              <Box sx={{ 
-                p: { xs: 1.5, sm: 2 }, 
-                display: 'flex', 
-                alignItems: 'center',
-                backgroundImage: 'linear-gradient(120deg, #2ecc71, #27ae60)'
-              }}>
-                <Avatar 
-                  sx={{ 
-                    bgcolor: 'rgba(255, 255, 255, 0.2)', 
-                    color: 'white',
-                    width: { xs: 40, sm: 48, md: 56 },
-                    height: { xs: 40, sm: 48, md: 56 }
-                  }}
-                >
-                  <CategoryIcon sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' } }} />
-                </Avatar>
-                <Box sx={{ ml: { xs: 1, sm: 2 } }}>
-                  <Typography 
-                    variant={isXs ? "h5" : "h4"}
-                    component="div" 
-                    sx={{ 
-                      fontWeight: 'bold', 
-                      color: 'white',
-                      fontFamily: "'Montserrat', sans-serif",
-                      fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2.125rem' }
-                    }}
-                  >
-                    {stats.categoryCount}
-                  </Typography>
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
-                      color: 'rgba(255,255,255,0.8)',
-                      fontFamily: "'Roboto', sans-serif",
-                      fontSize: { xs: '0.75rem', sm: '0.85rem', md: '0.9rem' }
-                    }}
-                  >
-                    Categories
-                  </Typography>
-                </Box>
-              </Box>
-              <Box 
-                sx={{ 
-                  p: 1, 
-                  backgroundColor: 'rgba(46, 204, 113, 0.1)',
-                  display: 'flex',
-                  justifyContent: 'center'
-                }}
-              >
-                <Typography 
-                  variant="caption" 
-                  sx={{ 
-                    display: 'flex', 
-                    alignItems: 'center',
-                    color: '#27ae60',
-                    fontSize: { xs: '0.7rem', md: '0.75rem' }
-                  }}
-                >
-                  {categoryGrowth.hasData ? (
-                    <>
-                      {categoryGrowth.positive ? (
-                        <ArrowUpwardIcon fontSize="small" sx={{ mr: 0.5, fontSize: { xs: '0.8rem', md: '1rem' } }} />
-                      ) : (
-                        <ArrowDownwardIcon fontSize="small" sx={{ mr: 0.5, fontSize: { xs: '0.8rem', md: '1rem' } }} />
-                      )}
-                      {categoryGrowth.percentage > 0 
-                        ? `${categoryGrowth.percentage}% ${categoryGrowth.positive ? 'growth' : 'reduction'} in categories` 
-                        : 'No change in categories'}
-                    </>
-                  ) : (
-                    'No historical data available'
-                  )}
-                </Typography>
-              </Box>
-            </Paper>
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={3}>
-            <Paper 
-              elevation={2} 
-              sx={{ 
-                borderRadius: '12px',
-                overflow: 'hidden',
-                transition: 'transform 0.3s',
-                height: '100%',
-                '&:hover': {
-                  transform: 'translateY(-5px)'
-                }
-              }}
-            >
-              <Box sx={{ 
-                p: { xs: 1.5, sm: 2 }, 
-                display: 'flex', 
-                alignItems: 'center',
-                backgroundImage: 'linear-gradient(120deg, #9b59b6, #8e44ad)'
-              }}>
-                <Avatar 
-                  sx={{ 
-                    bgcolor: 'rgba(255, 255, 255, 0.2)', 
-                    color: 'white',
-                    width: { xs: 40, sm: 48, md: 56 },
-                    height: { xs: 40, sm: 48, md: 56 }
-                  }}
-                >
-                  <SupplierIcon sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' } }} />
-                </Avatar>
-                <Box sx={{ ml: { xs: 1, sm: 2 } }}>
-                  <Typography 
-                    variant={isXs ? "h5" : "h4"}
-                    component="div" 
-                    sx={{ 
-                      fontWeight: 'bold', 
-                      color: 'white',
-                      fontFamily: "'Montserrat', sans-serif",
-                      fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2.125rem' }
-                    }}
-                  >
-                    {stats.supplierCount}
-                  </Typography>
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
-                      color: 'rgba(255,255,255,0.8)',
-                      fontFamily: "'Roboto', sans-serif",
-                      fontSize: { xs: '0.75rem', sm: '0.85rem', md: '0.9rem' }
-                    }}
-                  >
-                    Suppliers
-                  </Typography>
-                </Box>
-              </Box>
-              <Box 
-                sx={{ 
-                  p: 1, 
-                  backgroundColor: 'rgba(155, 89, 182, 0.1)',
-                  display: 'flex',
-                  justifyContent: 'center'
-                }}
-              >
-                <Typography 
-                  variant="caption" 
-                  sx={{ 
-                    display: 'flex', 
-                    alignItems: 'center',
-                    color: '#8e44ad',
-                    fontSize: { xs: '0.7rem', md: '0.75rem' },
-                    textAlign: 'center'
-                  }}
-                >
-                  {supplierGrowth.hasData ? (
-                    <>
-                      {supplierGrowth.positive ? (
-                        <ArrowUpwardIcon fontSize="small" sx={{ mr: 0.5, fontSize: { xs: '0.8rem', md: '1rem' } }} />
-                      ) : (
-                        <ArrowDownwardIcon fontSize="small" sx={{ mr: 0.5, fontSize: { xs: '0.8rem', md: '1rem' } }} />
-                      )}
-                      {supplierGrowth.percentage > 0 
-                        ? `${supplierGrowth.percentage}% ${supplierGrowth.positive ? 'increase' : 'decrease'} in suppliers` 
-                        : 'No change in suppliers'}
-                    </>
-                  ) : (
-                    'No historical data available'
-                  )}
-                </Typography>
-              </Box>
-            </Paper>
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={3}>
-            <Paper 
-              elevation={2} 
-              sx={{ 
-                borderRadius: '12px',
-                overflow: 'hidden',
-                transition: 'transform 0.3s',
-                height: '100%',
-                '&:hover': {
-                  transform: 'translateY(-5px)'
-                }
-              }}
-            >
-              <Box sx={{ 
-                p: { xs: 1.5, sm: 2 }, 
-                display: 'flex', 
-                alignItems: 'center',
-                backgroundImage: 'linear-gradient(120deg, #e74c3c, #c0392b)'
-              }}>
-                <Avatar 
-                  sx={{ 
-                    bgcolor: 'rgba(255, 255, 255, 0.2)', 
-                    color: 'white',
-                    width: { xs: 40, sm: 48, md: 56 },
-                    height: { xs: 40, sm: 48, md: 56 }
-                  }}
-                >
-                  <WarningIcon sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' } }} />
-                </Avatar>
-                <Box sx={{ ml: { xs: 1, sm: 2 } }}>
-                  <Typography 
-                    variant={isXs ? "h5" : "h4"}
-                    component="div" 
-                    sx={{ 
-                      fontWeight: 'bold', 
-                      color: 'white',
-                      fontFamily: "'Montserrat', sans-serif",
-                      fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2.125rem' }
-                    }}
-                  >
-                    {stats.lowStockCount}
-                  </Typography>
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
-                      color: 'rgba(255,255,255,0.8)',
-                      fontFamily: "'Roboto', sans-serif",
-                      fontSize: { xs: '0.75rem', sm: '0.85rem', md: '0.9rem' }
-                    }}
-                  >
-                    Low Stock Items
-                  </Typography>
-                </Box>
-              </Box>
-              <Box 
-                sx={{ 
-                  p: 1, 
-                  backgroundColor: 'rgba(231, 76, 60, 0.1)',
-                  display: 'flex',
-                  justifyContent: 'center'
-                }}
-              >
-                <Typography 
-                  variant="caption" 
-                  sx={{ 
-                    display: 'flex', 
-                    alignItems: 'center',
-                    color: '#c0392b',
-                    fontSize: { xs: '0.7rem', md: '0.75rem' },
-                    textAlign: 'center'
-                  }}
-                >
-                  {lowStockGrowth.hasData ? (
-                    !lowStockGrowth.positive ? (
-                      <>
-                        <ArrowDownwardIcon fontSize="small" sx={{ mr: 0.5, color: '#27ae60', fontSize: { xs: '0.8rem', md: '1rem' } }} />
-                        {lowStockGrowth.percentage}% decrease in low stock
-                      </>
-                    ) : (
-                      <>
-                        <ArrowUpwardIcon fontSize="small" sx={{ mr: 0.5, color: '#e74c3c', fontSize: { xs: '0.8rem', md: '1rem' } }} />
-                        {lowStockGrowth.percentage}% increase in low stock
-                      </>
-                    )
-                  ) : (
-                    'No historical data available'
-                  )}
-                </Typography>
-              </Box>
-            </Paper>
-          </Grid>
-        </Grid>
-
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={12} lg={8}>
-            <Paper 
-              elevation={2} 
-              sx={{ 
-                p: { xs: 2, md: 3 }, 
-                borderRadius: '12px',
-                height: '100%'
-              }}
-            >
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  mb: 2, 
-                  fontWeight: 600,
-                  display: 'flex',
+                <Box sx={{ 
+                  p: { xs: 1.5, sm: 2 }, 
+                  display: 'flex', 
                   alignItems: 'center',
-                  fontFamily: "'Poppins', sans-serif",
-                  fontSize: { xs: '1rem', md: '1.25rem' }
-                }}
-              >
-                <AssessmentIcon sx={{ mr: 1, fontSize: { xs: '1.2rem', md: '1.5rem' } }} /> Inventory History
-              </Typography>
-              <Divider sx={{ mb: 3 }} />
-              <Box sx={{ height: { xs: 260, sm: 270, md: 320 } }}>
-                {inventoryHistory.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart
-                      data={inventoryHistory}
-                      margin={{ 
-                        top: 10, 
-                        right: isXs ? 10 : (isSm ? 20 : 40), 
-                        left: isXs ? 0 : (isSm ? 10 : 20), 
-                        bottom: isXs ? 40 : (isSm ? 30 : 25) 
+                  backgroundImage: 'linear-gradient(120deg, #3498db, #2980b9)'
+                }}>
+                  <Avatar 
+                    sx={{ 
+                      bgcolor: 'rgba(255, 255, 255, 0.2)', 
+                      color: 'white',
+                      width: { xs: 40, sm: 48, md: 56 },
+                      height: { xs: 40, sm: 48, md: 56 }
+                    }}
+                  >
+                    <InventoryIcon sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' } }} />
+                  </Avatar>
+                  <Box sx={{ ml: { xs: 1, sm: 2 } }}>
+                    <Typography 
+                      variant={isXs ? "h5" : "h4"}
+                      component="div" 
+                      sx={{ 
+                        fontWeight: 'bold', 
+                        color: 'white',
+                        fontFamily: "'Montserrat', sans-serif",
+                        fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2.125rem' }
                       }}
                     >
-                      <CartesianGrid 
-                        strokeDasharray="3 3" 
-                        stroke="#f0f0f0" 
-                        horizontal={true}
-                        vertical={!isXs}
-                      />
-                      <XAxis 
-                        dataKey="label" 
-                        tick={{ 
-                          fill: '#666', 
-                          fontSize: isXs ? 7 : (isSm ? 9 : 11)
-                        }}
-                        interval={isXs ? "preserveStartEnd" : (isSm ? "preserveStartEnd" : "preserveEnd")}
-                        angle={isXs ? -45 : (isSm ? -30 : -15)}
-                        textAnchor="end"
-                        height={isXs ? 70 : (isSm ? 60 : 50)}
-                        tickMargin={isXs ? 15 : (isSm ? 12 : 10)}
-                        padding={{ left: 10, right: 10 }}
-                        tickFormatter={(value) => {
-                          if (isXs && value.length > 10) return value.substring(0, 10) + '...';
-                          return value;
-                        }}
-                      />
-                      <YAxis 
-                        tick={{ 
-                          fill: '#666', 
-                          fontSize: isXs ? 10 : 12 
-                        }}
-                        width={isXs ? 30 : 40}
-                        tickCount={5}
-                        domain={['dataMin - 10', 'dataMax + 10']}
-                      />
-                      <Tooltip 
-                        contentStyle={{ 
-                          borderRadius: '8px',
-                          boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                          border: 'none',
-                          backgroundColor: 'rgba(255,255,255,0.95)',
-                          fontSize: isXs ? '0.7rem' : '0.75rem'
-                        }}
-                        formatter={(value) => [`${value} items`, 'Total Quantity']}
-                      />
-                      <Legend wrapperStyle={{ fontSize: isXs ? '0.7rem' : '0.75rem' }} />
-                      <Line 
-                        type="monotone" 
-                        dataKey="totalQuantity" 
-                        stroke="#3498db" 
-                        strokeWidth={2} 
-                        dot={{ fill: '#3498db', r: isXs ? 4 : 6 }} 
-                        activeDot={{ r: isXs ? 6 : 8 }}
-                        name="Total Items"
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-                    <Typography variant="body1" color="text.secondary" fontSize={{ xs: '0.8rem', md: '1rem' }}>
-                      No historical data available yet. Inventory changes will be tracked over time.
+                      {stats.productCount}
+                    </Typography>
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        color: 'rgba(255,255,255,0.8)',
+                        fontFamily: "'Roboto', sans-serif",
+                        fontSize: { xs: '0.75rem', sm: '0.85rem', md: '0.9rem' }
+                      }}
+                    >
+                      Total Products
                     </Typography>
                   </Box>
-                )}
-              </Box>
-            </Paper>
-          </Grid>
-          
-          <Grid item xs={12} lg={4}>
-            <Paper 
-              elevation={2} 
-              sx={{ 
-                p: { xs: 2, md: 3 }, 
-                borderRadius: '12px',
-                height: '100%'
-              }}
-            >
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  mb: 2, 
-                  fontWeight: 600,
-                  display: 'flex',
-                  alignItems: 'center',
-                  fontFamily: "'Poppins', sans-serif",
-                  fontSize: { xs: '1rem', md: '1.25rem' }
-                }}
-              >
-                <CategoryIcon sx={{ mr: 1, fontSize: { xs: '1.2rem', md: '1.5rem' } }} /> Product Categories
-              </Typography>
-              <Divider sx={{ mb: 3 }} />
-              <Box sx={{ 
-                height: { xs: 200, sm: 250, md: 300 }, 
-                display: 'flex', 
-                flexDirection: 'column', 
-                justifyContent: 'center', 
-                alignItems: 'center' 
-              }}>
-                <Box sx={{ 
-                  width: '100%', 
-                  mb: 2, 
-                  display: 'flex', 
-                  flexWrap: 'wrap', 
-                  justifyContent: 'center', 
-                  gap: 1,
-                  maxWidth: '100%',
-                  px: 1
-                }}>
-                  {productsByCategory.map((entry, index) => (
-                    <Box 
-                      key={index}
-                      sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center',
-                        mx: 1 
-                      }}
-                    >
-                      <Box 
-                        sx={{ 
-                          width: 12, 
-                          height: 12, 
-                          backgroundColor: COLORS[index % COLORS.length],
-                          borderRadius: '50%',
-                          mr: 1
-                        }} 
-                      />
-                      <Typography 
-                        variant="caption" 
-                        fontSize={{ xs: '0.65rem', md: '0.75rem' }}
-                        sx={{
-                          maxWidth: '75px',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis'
-                        }}
-                      >
-                        {entry.name} ({stats.productCount > 0 ? Math.round(entry.value / stats.productCount * 100) : 0}%)
-                      </Typography>
-                    </Box>
-                  ))}
                 </Box>
-                {productsByCategory.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={productsByCategory}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={getPieChartSize().innerRadius}
-                        outerRadius={getPieChartSize().outerRadius}
-                        fill="#8884d8"
-                        paddingAngle={2}
-                        dataKey="value"
-                        label={false}
-                      >
-                        {productsByCategory.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip 
-                        formatter={(value, name) => [`${value} items (${stats.productCount > 0 ? Math.round(value / stats.productCount * 100) : 0}%)`, name]}
-                        contentStyle={{ 
-                          borderRadius: '8px',
-                          boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                          border: 'none',
-                          backgroundColor: 'rgba(255,255,255,0.95)',
-                          fontSize: isXs ? '0.7rem' : '0.75rem'
-                        }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <Typography variant="body1" color="text.secondary" align="center" fontSize={{ xs: '0.8rem', md: '1rem' }}>
-                    No product categories data available
-                  </Typography>
-                )}
-              </Box>
-            </Paper>
-          </Grid>
-        </Grid>
-
-        <Paper 
-          elevation={2} 
-          sx={{ 
-            p: { xs: 2, md: 3 }, 
-            borderRadius: '12px',
-            mb: 3,
-            backgroundImage: 'linear-gradient(to right, #fff, rgba(231, 76, 60, 0.05))'
-          }}
-        >
-          <Typography 
-            variant="h6" 
-            sx={{ 
-              mb: 2, 
-              fontWeight: 600,
-              display: 'flex',
-              alignItems: 'center',
-              color: '#c0392b',
-              fontFamily: "'Poppins', sans-serif",
-              fontSize: { xs: '1rem', md: '1.25rem' }
-            }}
-          >
-            <WarningIcon sx={{ mr: 1, fontSize: { xs: '1.2rem', md: '1.5rem' } }} /> Low Stock Items
-          </Typography>
-          <Divider sx={{ mb: 3 }} />
-          
-          {stats.lowStockItems.length > 0 ? (
-            <List sx={{ width: '100%', p: 0 }}>
-              {stats.lowStockItems.map((item) => (
-                <Paper 
-                  key={item.id || item.productId} 
-                  elevation={1} 
+                <Box 
                   sx={{ 
-                    mb: 2, 
-                    borderRadius: '8px',
-                    overflow: 'hidden',
-                    border: '1px solid rgba(231, 76, 60, 0.2)'
+                    p: 1, 
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    display: 'flex',
+                    justifyContent: 'center'
                   }}
                 >
-                  <ListItem 
-                    alignItems="flex-start"
-                    sx={{
-                      flexDirection: { xs: 'column', sm: 'row' },
-                      py: { xs: 1, sm: 2 },
-                      px: { xs: 1, sm: 2 },
-                      overflow: 'hidden',
-                      width: '100%'
+                  <Typography 
+                    variant="caption" 
+                    sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center',
+                      color: '#2980b9',
+                      fontSize: { xs: '0.7rem', md: '0.75rem' }
                     }}
                   >
-                    <Box sx={{ 
+                    {productGrowth.hasData ? (
+                      <>
+                        {productGrowth.positive ? (
+                          <ArrowUpwardIcon fontSize="small" sx={{ mr: 0.5, fontSize: { xs: '0.8rem', md: '1rem' } }} />
+                        ) : (
+                          <ArrowDownwardIcon fontSize="small" sx={{ mr: 0.5, fontSize: { xs: '0.8rem', md: '1rem' } }} />
+                        )}
+                        {productGrowth.percentage}% {productGrowth.positive ? 'increase' : 'decrease'} this month
+                      </>
+                    ) : (
+                      'No historical data available'
+                    )}
+                  </Typography>
+                </Box>
+              </Paper>
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <Paper 
+                elevation={2} 
+                sx={{ 
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  transition: 'transform 0.3s',
+                  height: '100%',
+                  '&:hover': {
+                    transform: 'translateY(-5px)'
+                  }
+                }}
+              >
+                <Box sx={{ 
+                  p: { xs: 1.5, sm: 2 }, 
+                  display: 'flex', 
+                  alignItems: 'center',
+                  backgroundImage: 'linear-gradient(120deg, #2ecc71, #27ae60)'
+                }}>
+                  <Avatar 
+                    sx={{ 
+                      bgcolor: 'rgba(255, 255, 255, 0.2)', 
+                      color: 'white',
+                      width: { xs: 40, sm: 48, md: 56 },
+                      height: { xs: 40, sm: 48, md: 56 }
+                    }}
+                  >
+                    <CategoryIcon sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' } }} />
+                  </Avatar>
+                  <Box sx={{ ml: { xs: 1, sm: 2 } }}>
+                    <Typography 
+                      variant={isXs ? "h5" : "h4"}
+                      component="div" 
+                      sx={{ 
+                        fontWeight: 'bold', 
+                        color: 'white',
+                        fontFamily: "'Montserrat', sans-serif",
+                        fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2.125rem' }
+                      }}
+                    >
+                      {stats.categoryCount}
+                    </Typography>
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        color: 'rgba(255,255,255,0.8)',
+                        fontFamily: "'Roboto', sans-serif",
+                        fontSize: { xs: '0.75rem', sm: '0.85rem', md: '0.9rem' }
+                      }}
+                    >
+                      Categories
+                    </Typography>
+                  </Box>
+                </Box>
+                <Box 
+                  sx={{ 
+                    p: 1, 
+                    backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                    display: 'flex',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <Typography 
+                    variant="caption" 
+                    sx={{ 
                       display: 'flex', 
-                      alignItems: 'center', 
-                      width: '100%',
-                      mb: { xs: 1, sm: 0 }
-                    }}>
-                      <ListItemAvatar sx={{ minWidth: { xs: '40px', sm: '56px' } }}>
-                        <Avatar 
+                      alignItems: 'center',
+                      color: '#27ae60',
+                      fontSize: { xs: '0.7rem', md: '0.75rem' }
+                    }}
+                  >
+                    {categoryGrowth.hasData ? (
+                      <>
+                        {categoryGrowth.positive ? (
+                          <ArrowUpwardIcon fontSize="small" sx={{ mr: 0.5, fontSize: { xs: '0.8rem', md: '1rem' } }} />
+                        ) : (
+                          <ArrowDownwardIcon fontSize="small" sx={{ mr: 0.5, fontSize: { xs: '0.8rem', md: '1rem' } }} />
+                        )}
+                        {categoryGrowth.percentage > 0 
+                          ? `${categoryGrowth.percentage}% ${categoryGrowth.positive ? 'growth' : 'reduction'} in categories` 
+                          : 'No change in categories'}
+                      </>
+                    ) : (
+                      'No historical data available'
+                    )}
+                  </Typography>
+                </Box>
+              </Paper>
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <Paper 
+                elevation={2} 
+                sx={{ 
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  transition: 'transform 0.3s',
+                  height: '100%',
+                  '&:hover': {
+                    transform: 'translateY(-5px)'
+                  }
+                }}
+              >
+                <Box sx={{ 
+                  p: { xs: 1.5, sm: 2 }, 
+                  display: 'flex', 
+                  alignItems: 'center',
+                  backgroundImage: 'linear-gradient(120deg, #9b59b6, #8e44ad)'
+                }}>
+                  <Avatar 
+                    sx={{ 
+                      bgcolor: 'rgba(255, 255, 255, 0.2)', 
+                      color: 'white',
+                      width: { xs: 40, sm: 48, md: 56 },
+                      height: { xs: 40, sm: 48, md: 56 }
+                    }}
+                  >
+                    <SupplierIcon sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' } }} />
+                  </Avatar>
+                  <Box sx={{ ml: { xs: 1, sm: 2 } }}>
+                    <Typography 
+                      variant={isXs ? "h5" : "h4"}
+                      component="div" 
+                      sx={{ 
+                        fontWeight: 'bold', 
+                        color: 'white',
+                        fontFamily: "'Montserrat', sans-serif",
+                        fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2.125rem' }
+                      }}
+                    >
+                      {stats.supplierCount}
+                    </Typography>
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        color: 'rgba(255,255,255,0.8)',
+                        fontFamily: "'Roboto', sans-serif",
+                        fontSize: { xs: '0.75rem', sm: '0.85rem', md: '0.9rem' }
+                      }}
+                    >
+                      Suppliers
+                    </Typography>
+                  </Box>
+                </Box>
+                <Box 
+                  sx={{ 
+                    p: 1, 
+                    backgroundColor: 'rgba(155, 89, 182, 0.1)',
+                    display: 'flex',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <Typography 
+                    variant="caption" 
+                    sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center',
+                      color: '#8e44ad',
+                      fontSize: { xs: '0.7rem', md: '0.75rem' },
+                      textAlign: 'center'
+                    }}
+                  >
+                    {supplierGrowth.hasData ? (
+                      <>
+                        {supplierGrowth.positive ? (
+                          <ArrowUpwardIcon fontSize="small" sx={{ mr: 0.5, fontSize: { xs: '0.8rem', md: '1rem' } }} />
+                        ) : (
+                          <ArrowDownwardIcon fontSize="small" sx={{ mr: 0.5, fontSize: { xs: '0.8rem', md: '1rem' } }} />
+                        )}
+                        {supplierGrowth.percentage > 0 
+                          ? `${supplierGrowth.percentage}% ${supplierGrowth.positive ? 'increase' : 'decrease'} in suppliers` 
+                          : 'No change in suppliers'}
+                      </>
+                    ) : (
+                      'No historical data available'
+                    )}
+                  </Typography>
+                </Box>
+              </Paper>
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <Paper 
+                elevation={2} 
+                sx={{ 
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  transition: 'transform 0.3s',
+                  height: '100%',
+                  '&:hover': {
+                    transform: 'translateY(-5px)'
+                  }
+                }}
+              >
+                <Box sx={{ 
+                  p: { xs: 1.5, sm: 2 }, 
+                  display: 'flex', 
+                  alignItems: 'center',
+                  backgroundImage: 'linear-gradient(120deg, #e74c3c, #c0392b)'
+                }}>
+                  <Avatar 
+                    sx={{ 
+                      bgcolor: 'rgba(255, 255, 255, 0.2)', 
+                      color: 'white',
+                      width: { xs: 40, sm: 48, md: 56 },
+                      height: { xs: 40, sm: 48, md: 56 }
+                    }}
+                  >
+                    <WarningIcon sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' } }} />
+                  </Avatar>
+                  <Box sx={{ ml: { xs: 1, sm: 2 } }}>
+                    <Typography 
+                      variant={isXs ? "h5" : "h4"}
+                      component="div" 
+                      sx={{ 
+                        fontWeight: 'bold', 
+                        color: 'white',
+                        fontFamily: "'Montserrat', sans-serif",
+                        fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2.125rem' }
+                      }}
+                    >
+                      {stats.lowStockCount}
+                    </Typography>
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        color: 'rgba(255,255,255,0.8)',
+                        fontFamily: "'Roboto', sans-serif",
+                        fontSize: { xs: '0.75rem', sm: '0.85rem', md: '0.9rem' }
+                      }}
+                    >
+                      Low Stock Items
+                    </Typography>
+                  </Box>
+                </Box>
+                <Box 
+                  sx={{ 
+                    p: 1, 
+                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                    display: 'flex',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <Typography 
+                    variant="caption" 
+                    sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center',
+                      color: '#c0392b',
+                      fontSize: { xs: '0.7rem', md: '0.75rem' },
+                      textAlign: 'center'
+                    }}
+                  >
+                    {lowStockGrowth.hasData ? (
+                      !lowStockGrowth.positive ? (
+                        <>
+                          <ArrowDownwardIcon fontSize="small" sx={{ mr: 0.5, color: '#27ae60', fontSize: { xs: '0.8rem', md: '1rem' } }} />
+                          {lowStockGrowth.percentage}% decrease in low stock
+                        </>
+                      ) : (
+                        <>
+                          <ArrowUpwardIcon fontSize="small" sx={{ mr: 0.5, color: '#e74c3c', fontSize: { xs: '0.8rem', md: '1rem' } }} />
+                          {lowStockGrowth.percentage}% increase in low stock
+                        </>
+                      )
+                    ) : (
+                      'No historical data available'
+                    )}
+                  </Typography>
+                </Box>
+              </Paper>
+            </Grid>
+          </Grid>
+
+          <Grid container spacing={2} sx={{ mb: 3 }}>
+            <Grid item xs={12} lg={8}>
+              <Paper 
+                elevation={2} 
+                sx={{ 
+                  p: { xs: 2, md: 3 }, 
+                  borderRadius: '12px',
+                  height: '100%'
+                }}
+              >
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    mb: 2, 
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    fontFamily: "'Poppins', sans-serif",
+                    fontSize: { xs: '1rem', md: '1.25rem' }
+                  }}
+                >
+                  <AssessmentIcon sx={{ mr: 1, fontSize: { xs: '1.2rem', md: '1.5rem' } }} /> Inventory History
+                </Typography>
+                <Divider sx={{ mb: 3 }} />
+                <Box sx={{ height: { xs: 260, sm: 270, md: 320 } }}>
+                  {inventoryHistory.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart
+                        data={inventoryHistory}
+                        margin={{ 
+                          top: 10, 
+                          right: isXs ? 10 : (isSm ? 20 : 40), 
+                          left: isXs ? 0 : (isSm ? 10 : 20), 
+                          bottom: isXs ? 40 : (isSm ? 30 : 25) 
+                        }}
+                      >
+                        <CartesianGrid 
+                          strokeDasharray="3 3" 
+                          stroke="#f0f0f0" 
+                          horizontal={true}
+                          vertical={!isXs}
+                        />
+                        <XAxis 
+                          dataKey="label" 
+                          tick={{ 
+                            fill: '#666', 
+                            fontSize: isXs ? 7 : (isSm ? 9 : 11)
+                          }}
+                          interval={isXs ? "preserveStartEnd" : (isSm ? "preserveStartEnd" : "preserveEnd")}
+                          angle={isXs ? -45 : (isSm ? -30 : -15)}
+                          textAnchor="end"
+                          height={isXs ? 70 : (isSm ? 60 : 50)}
+                          tickMargin={isXs ? 15 : (isSm ? 12 : 10)}
+                          padding={{ left: 10, right: 10 }}
+                          tickFormatter={(value) => {
+                            if (isXs && value.length > 10) return value.substring(0, 10) + '...';
+                            return value;
+                          }}
+                        />
+                        <YAxis 
+                          tick={{ 
+                            fill: '#666', 
+                            fontSize: isXs ? 10 : 12 
+                          }}
+                          width={isXs ? 30 : 40}
+                          tickCount={5}
+                          domain={['dataMin - 10', 'dataMax + 10']}
+                        />
+                        <Tooltip 
+                          contentStyle={{ 
+                            borderRadius: '8px',
+                            boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                            border: 'none',
+                            backgroundColor: 'rgba(255,255,255,0.95)',
+                            fontSize: isXs ? '0.7rem' : '0.75rem'
+                          }}
+                          formatter={(value) => [`${value} items`, 'Total Quantity']}
+                        />
+                        <Legend wrapperStyle={{ fontSize: isXs ? '0.7rem' : '0.75rem' }} />
+                        <Line 
+                          type="monotone" 
+                          dataKey="totalQuantity" 
+                          stroke="#3498db" 
+                          strokeWidth={2} 
+                          dot={{ fill: '#3498db', r: isXs ? 4 : 6 }} 
+                          activeDot={{ r: isXs ? 6 : 8 }}
+                          name="Total Items"
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                      <Typography variant="body1" color="text.secondary" fontSize={{ xs: '0.8rem', md: '1rem' }}>
+                        No historical data available yet. Inventory changes will be tracked over time.
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+              </Paper>
+            </Grid>
+            
+            <Grid item xs={12} lg={4}>
+              <Paper 
+                elevation={2} 
+                sx={{ 
+                  p: { xs: 2, md: 3 }, 
+                  borderRadius: '12px',
+                  height: '100%'
+                }}
+              >
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    mb: 2, 
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    fontFamily: "'Poppins', sans-serif",
+                    fontSize: { xs: '1rem', md: '1.25rem' }
+                  }}
+                >
+                  <CategoryIcon sx={{ mr: 1, fontSize: { xs: '1.2rem', md: '1.5rem' } }} /> Product Categories
+                </Typography>
+                <Divider sx={{ mb: 3 }} />
+                <Box sx={{ 
+                  height: { xs: 200, sm: 250, md: 300 }, 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  justifyContent: 'center', 
+                  alignItems: 'center' 
+                }}>
+                  <Box sx={{ 
+                    width: '100%', 
+                    mb: 2, 
+                    display: 'flex', 
+                    flexWrap: 'wrap', 
+                    justifyContent: 'center', 
+                    gap: 1,
+                    maxWidth: '100%',
+                    px: 1
+                  }}>
+                    {productsByCategory.map((entry, index) => (
+                      <Box 
+                        key={index}
+                        sx={{ 
+                          display: 'flex', 
+                          alignItems: 'center',
+                          mx: 1 
+                        }}
+                      >
+                        <Box 
                           sx={{ 
-                            bgcolor: 'rgba(231, 76, 60, 0.8)',
-                            width: { xs: 32, sm: 40 },
-                            height: { xs: 32, sm: 40 }
+                            width: 12, 
+                            height: 12, 
+                            backgroundColor: COLORS[index % COLORS.length],
+                            borderRadius: '50%',
+                            mr: 1
+                          }} 
+                        />
+                        <Typography 
+                          variant="caption" 
+                          fontSize={{ xs: '0.65rem', md: '0.75rem' }}
+                          sx={{
+                            maxWidth: '75px',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis'
                           }}
                         >
-                          <InventoryIcon fontSize={isXs ? "small" : "medium"} />
-                        </Avatar>
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={
-                          <Typography 
-                            variant="body1" 
+                          {entry.name} ({stats.productCount > 0 ? Math.round(entry.value / stats.productCount * 100) : 0}%)
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                  {productsByCategory.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={productsByCategory}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={getPieChartSize().innerRadius}
+                          outerRadius={getPieChartSize().outerRadius}
+                          fill="#8884d8"
+                          paddingAngle={2}
+                          dataKey="value"
+                          label={false}
+                        >
+                          {productsByCategory.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          formatter={(value, name) => [`${value} items (${stats.productCount > 0 ? Math.round(value / stats.productCount * 100) : 0}%)`, name]}
+                          contentStyle={{ 
+                            borderRadius: '8px',
+                            boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                            border: 'none',
+                            backgroundColor: 'rgba(255,255,255,0.95)',
+                            fontSize: isXs ? '0.7rem' : '0.75rem'
+                          }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <Typography variant="body1" color="text.secondary" align="center" fontSize={{ xs: '0.8rem', md: '1rem' }}>
+                      No product categories data available
+                    </Typography>
+                  )}
+                </Box>
+              </Paper>
+            </Grid>
+          </Grid>
+
+          <Paper 
+            elevation={2} 
+            sx={{ 
+              p: { xs: 2, md: 3 }, 
+              borderRadius: '12px',
+              mb: 3,
+              backgroundImage: 'linear-gradient(to right, #fff, rgba(231, 76, 60, 0.05))'
+            }}
+          >
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                mb: 2, 
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                color: '#c0392b',
+                fontFamily: "'Poppins', sans-serif",
+                fontSize: { xs: '1rem', md: '1.25rem' }
+              }}
+            >
+              <WarningIcon sx={{ mr: 1, fontSize: { xs: '1.2rem', md: '1.5rem' } }} /> Low Stock Items
+            </Typography>
+            <Divider sx={{ mb: 3 }} />
+            
+            {stats.lowStockItems.length > 0 ? (
+              <List sx={{ width: '100%', p: 0 }}>
+                {stats.lowStockItems.map((item) => (
+                  <Paper 
+                    key={item.id || item.productId} 
+                    elevation={1} 
+                    sx={{ 
+                      mb: 2, 
+                      borderRadius: '8px',
+                      overflow: 'hidden',
+                      border: '1px solid rgba(231, 76, 60, 0.2)'
+                    }}
+                  >
+                    <ListItem 
+                      alignItems="flex-start"
+                      sx={{
+                        flexDirection: { xs: 'column', sm: 'row' },
+                        py: { xs: 1, sm: 2 },
+                        px: { xs: 1, sm: 2 },
+                        overflow: 'hidden',
+                        width: '100%'
+                      }}
+                    >
+                      <Box sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        width: '100%',
+                        mb: { xs: 1, sm: 0 }
+                      }}>
+                        <ListItemAvatar sx={{ minWidth: { xs: '40px', sm: '56px' } }}>
+                          <Avatar 
                             sx={{ 
-                              fontWeight: 600,
-                              fontSize: { xs: '0.85rem', md: '1rem' },
-                              fontFamily: "'Roboto', sans-serif"
+                              bgcolor: 'rgba(231, 76, 60, 0.8)',
+                              width: { xs: 32, sm: 40 },
+                              height: { xs: 32, sm: 40 }
                             }}
                           >
-                            {item.productName}
-                          </Typography>
-                        }
-                        secondary={
-                          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, mt: 0.5, gap: { xs: 0.5, sm: 2 } }}>
-                            <Typography
-                              variant="body2"
-                              color="text.secondary"
-                              fontSize={{ xs: '0.7rem', md: '0.75rem' }}
-                              sx={{ whiteSpace: 'nowrap' }}
+                            <InventoryIcon fontSize={isXs ? "small" : "medium"} />
+                          </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={
+                            <Typography 
+                              variant="body1" 
+                              sx={{ 
+                                fontWeight: 600,
+                                fontSize: { xs: '0.85rem', md: '1rem' },
+                                fontFamily: "'Roboto', sans-serif"
+                              }}
                             >
-                              Reorder Level: {item.reorderLevel}
+                              {item.productName}
                             </Typography>
-                            
-                            <Box sx={{ display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
-                              <LocationIcon sx={{ color: 'text.secondary', fontSize: { xs: '0.7rem', md: '0.9rem' }, mr: 0.5, flexShrink: 0 }} />
+                          }
+                          secondary={
+                            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, mt: 0.5, gap: { xs: 0.5, sm: 2 } }}>
                               <Typography
                                 variant="body2"
                                 color="text.secondary"
                                 fontSize={{ xs: '0.7rem', md: '0.75rem' }}
-                                sx={{ 
-                                  whiteSpace: 'nowrap',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  maxWidth: { xs: '100%', sm: '150px', md: '200px' }
-                                }}
+                                sx={{ whiteSpace: 'nowrap' }}
                               >
-                                {item.location || 'Not specified'}
+                                Reorder Level: {item.reorderLevel}
                               </Typography>
+                              
+                              <Box sx={{ display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
+                                <LocationIcon sx={{ color: 'text.secondary', fontSize: { xs: '0.7rem', md: '0.9rem' }, mr: 0.5, flexShrink: 0 }} />
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                  fontSize={{ xs: '0.7rem', md: '0.75rem' }}
+                                  sx={{ 
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    maxWidth: { xs: '100%', sm: '150px', md: '200px' }
+                                  }}
+                                >
+                                  {item.location || 'Not specified'}
+                                </Typography>
+                              </Box>
                             </Box>
-                          </Box>
-                        }
-                      />
-                    </Box>
-                    
-                    <Box sx={{ 
-                      alignSelf: { xs: 'flex-start', sm: 'center' }, 
-                      ml: { xs: 0, sm: 'auto' }, 
-                      mt: { xs: 1, sm: 0 } 
-                    }}>
-                      <Typography 
-                        variant="body2" 
-                        sx={{ 
-                          color: item.quantity === 0 ? '#c0392b' : '#e67e22',
-                          fontWeight: 'bold',
-                          bgcolor: item.quantity === 0 ? 'rgba(231, 76, 60, 0.1)' : 'rgba(230, 126, 34, 0.1)',
-                          py: 0.5,
-                          px: 1.5,
-                          borderRadius: '16px',
-                          fontSize: { xs: '0.7rem', md: '0.75rem' },
-                          display: 'inline-block',
-                          lineHeight: 1.5
-                        }}
-                      >
-                        {item.quantity} {item.quantity === 1 ? "item" : "items"} in stock
-                      </Typography>
-                    </Box>
-                  </ListItem>
-                </Paper>
-              ))}
-            </List>
-          ) : (
-            <Box 
-              sx={{ 
-                py: 4, 
-                display: 'flex', 
-                flexDirection: 'column',
-                alignItems: 'center',
-                bgcolor: 'white',
-                borderRadius: '8px'
-              }}
-            >
-              <Typography 
-                variant="body1" 
-                color="text.secondary" 
-                align="center"
-                sx={{ mb: 1, fontSize: { xs: '0.85rem', md: '1rem' } }}
-              >
-                No low stock items found. Your inventory is in good shape!
-              </Typography>
-              <Typography 
-                variant="body2" 
-                color="success.main" 
-                align="center"
-                fontSize={{ xs: '0.75rem', md: '0.85rem' }}
-              >
-                All inventory items are above their reorder levels.
-              </Typography>
-            </Box>
-          )}
-        </Paper>
-
-        <Grid container spacing={2} sx={{ width: '100%', m: 0 }}>
-          <Grid item xs={12} md={6}>
-            <Paper 
-              elevation={2} 
-              sx={{ 
-                p: { xs: 2, md: 3 }, 
-                borderRadius: '12px',
-                height: '100%'
-              }}
-            >
-              <Typography 
-                variant="h6" 
+                          }
+                        />
+                      </Box>
+                      
+                      <Box sx={{ 
+                        alignSelf: { xs: 'flex-start', sm: 'center' }, 
+                        ml: { xs: 0, sm: 'auto' }, 
+                        mt: { xs: 1, sm: 0 } 
+                      }}>
+                        <Typography 
+                          variant="body2" 
+                          sx={{ 
+                            color: item.quantity === 0 ? '#c0392b' : '#e67e22',
+                            fontWeight: 'bold',
+                            bgcolor: item.quantity === 0 ? 'rgba(231, 76, 60, 0.1)' : 'rgba(230, 126, 34, 0.1)',
+                            py: 0.5,
+                            px: 1.5,
+                            borderRadius: '16px',
+                            fontSize: { xs: '0.7rem', md: '0.75rem' },
+                            display: 'inline-block',
+                            lineHeight: 1.5
+                          }}
+                        >
+                          {item.quantity} {item.quantity === 1 ? "item" : "items"} in stock
+                        </Typography>
+                      </Box>
+                    </ListItem>
+                  </Paper>
+                ))}
+              </List>
+            ) : (
+              <Box 
                 sx={{ 
-                  mb: 2, 
-                  fontWeight: 600,
-                  display: 'flex',
+                  py: 4, 
+                  display: 'flex', 
+                  flexDirection: 'column',
                   alignItems: 'center',
-                  fontFamily: "'Poppins', sans-serif",
-                  fontSize: { xs: '1rem', md: '1.25rem' }
+                  bgcolor: 'white',
+                  borderRadius: '8px'
                 }}
               >
-                <InventoryIcon sx={{ mr: 1, fontSize: { xs: '1.2rem', md: '1.5rem' } }} /> Inventory Summary
-              </Typography>
-              <Divider sx={{ mb: 3 }} />
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
-                  <Card 
-                    elevation={0} 
-                    sx={{ 
-                      backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                      borderRadius: '8px',
-                      p: { xs: 1.5, md: 2 }
-                    }}
-                  >
-                    <CardContent sx={{ p: 0 }}>
-                      <Typography variant="h4" sx={{ 
-                        fontWeight: 'bold', 
-                        color: '#3498db', 
-                        mb: 1,
-                        fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2.125rem' }
-                      }}>
-                        {stats.totalQuantity}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" fontSize={{ xs: '0.75rem', md: '0.85rem' }}>
-                        Total items in stock
-                      </Typography>
-                      <Box sx={{ mt: 1, display: 'flex', alignItems: 'center' }}>
-                        {totalQuantityGrowth.hasData ? (
-                          <>
-                            {totalQuantityGrowth.positive ? (
-                              <ArrowUpwardIcon fontSize="small" sx={{ mr: 0.5, color: 'success.main', fontSize: { xs: '0.8rem', md: '1rem' } }} />
-                            ) : (
-                              <ArrowDownwardIcon fontSize="small" sx={{ mr: 0.5, color: 'error.main', fontSize: { xs: '0.8rem', md: '1rem' } }} />
-                            )}
+                <Typography 
+                  variant="body1" 
+                  color="text.secondary" 
+                  align="center"
+                  sx={{ mb: 1, fontSize: { xs: '0.85rem', md: '1rem' } }}
+                >
+                  No low stock items found. Your inventory is in good shape!
+                </Typography>
+                <Typography 
+                  variant="body2" 
+                  color="success.main" 
+                  align="center"
+                  fontSize={{ xs: '0.75rem', md: '0.85rem' }}
+                >
+                  All inventory items are above their reorder levels.
+                </Typography>
+              </Box>
+            )}
+          </Paper>
+
+          <Grid container spacing={2} sx={{ width: '100%', m: 0 }}>
+            <Grid item xs={12} md={6}>
+              <Paper 
+                elevation={2} 
+                sx={{ 
+                  p: { xs: 2, md: 3 }, 
+                  borderRadius: '12px',
+                  height: '100%'
+                }}
+              >
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    mb: 2, 
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    fontFamily: "'Poppins', sans-serif",
+                    fontSize: { xs: '1rem', md: '1.25rem' }
+                  }}
+                >
+                  <InventoryIcon sx={{ mr: 1, fontSize: { xs: '1.2rem', md: '1.5rem' } }} /> Inventory Summary
+                </Typography>
+                <Divider sx={{ mb: 3 }} />
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <Card 
+                      elevation={0} 
+                      sx={{ 
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        borderRadius: '8px',
+                        p: { xs: 1.5, md: 2 }
+                      }}
+                    >
+                      <CardContent sx={{ p: 0 }}>
+                        <Typography variant="h4" sx={{ 
+                          fontWeight: 'bold', 
+                          color: '#3498db', 
+                          mb: 1,
+                          fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2.125rem' }
+                        }}>
+                          {stats.totalQuantity}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" fontSize={{ xs: '0.75rem', md: '0.85rem' }}>
+                          Total items in stock
+                        </Typography>
+                        <Box sx={{ mt: 1, display: 'flex', alignItems: 'center' }}>
+                          {totalQuantityGrowth.hasData ? (
+                            <>
+                              {totalQuantityGrowth.positive ? (
+                                <ArrowUpwardIcon fontSize="small" sx={{ mr: 0.5, color: 'success.main', fontSize: { xs: '0.8rem', md: '1rem' } }} />
+                              ) : (
+                                <ArrowDownwardIcon fontSize="small" sx={{ mr: 0.5, color: 'error.main', fontSize: { xs: '0.8rem', md: '1rem' } }} />
+                              )}
+                              <Typography 
+                                variant="caption" 
+                                color={totalQuantityGrowth.positive ? 'success.main' : 'error.main'}
+                                fontSize={{ xs: '0.7rem', md: '0.75rem' }}
+                              >
+                                {totalQuantityGrowth.percentage}% from last period
+                              </Typography>
+                            </>
+                          ) : (
                             <Typography 
                               variant="caption" 
-                              color={totalQuantityGrowth.positive ? 'success.main' : 'error.main'}
+                              color="text.secondary"
                               fontSize={{ xs: '0.7rem', md: '0.75rem' }}
                             >
-                              {totalQuantityGrowth.percentage}% from last period
+                              No historical data available
                             </Typography>
-                          </>
-                        ) : (
+                          )}
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Card 
+                      elevation={0} 
+                      sx={{ 
+                        backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                        borderRadius: '8px',
+                        p: { xs: 1.5, md: 2 }
+                      }}
+                    >
+                      <CardContent sx={{ p: 0 }}>
+                        <Typography variant="h4" sx={{ 
+                          fontWeight: 'bold', 
+                          color: '#2ecc71', 
+                          mb: 1,
+                          fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2.125rem' }
+                        }}>
+                          {stats.productCount > 0 ? Math.round((stats.productCount - stats.lowStockCount) / stats.productCount * 100) : 0}%
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" fontSize={{ xs: '0.75rem', md: '0.85rem' }}>
+                          Healthy stock level
+                        </Typography>
+                        <Box sx={{ mt: 1 }}>
                           <Typography 
                             variant="caption" 
                             color="text.secondary"
                             fontSize={{ xs: '0.7rem', md: '0.75rem' }}
                           >
-                            No historical data available
+                            {stats.productCount - stats.lowStockCount} products above reorder level
                           </Typography>
-                        )}
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Card 
-                    elevation={0} 
-                    sx={{ 
-                      backgroundColor: 'rgba(46, 204, 113, 0.1)',
-                      borderRadius: '8px',
-                      p: { xs: 1.5, md: 2 }
-                    }}
-                  >
-                    <CardContent sx={{ p: 0 }}>
-                      <Typography variant="h4" sx={{ 
-                        fontWeight: 'bold', 
-                        color: '#2ecc71', 
-                        mb: 1,
-                        fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2.125rem' }
-                      }}>
-                        {stats.productCount > 0 ? Math.round((stats.productCount - stats.lowStockCount) / stats.productCount * 100) : 0}%
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" fontSize={{ xs: '0.75rem', md: '0.85rem' }}>
-                        Healthy stock level
-                      </Typography>
-                      <Box sx={{ mt: 1 }}>
-                        <Typography 
-                          variant="caption" 
-                          color="text.secondary"
-                          fontSize={{ xs: '0.7rem', md: '0.75rem' }}
-                        >
-                          {stats.productCount - stats.lowStockCount} products above reorder level
-                        </Typography>
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </Grid>
-                <Grid item xs={12}>
-                  <Box sx={{ mt: 2 }}>
-                    <Typography 
-                      variant="body2" 
-                      color="text.secondary" 
-                      sx={{ mb: 1, fontSize: { xs: '0.75rem', md: '0.85rem' } }}
-                    >
-                      <b>Inventory Health:</b> {stats.lowStockCount > 0 
-                        ? `${stats.lowStockCount} items need attention` 
-                        : 'All inventory levels are healthy'}
-                    </Typography>
-                    <Typography 
-                      variant="body2" 
-                      color="text.secondary"
-                      fontSize={{ xs: '0.75rem', md: '0.85rem' }}
-                    >
-                      <b>Average Stock Level:</b> {stats.productCount > 0 
-                        ? `${Math.round(stats.totalQuantity / stats.productCount)} units per product` 
-                        : 'No products in system'}
-                    </Typography>
-                  </Box>
-                </Grid>
-              </Grid>
-            </Paper>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Paper 
-              elevation={2} 
-              sx={{ 
-                p: { xs: 2, md: 3 }, 
-                borderRadius: '12px',
-                height: '100%'
-              }}
-            >
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  mb: 2, 
-                  fontWeight: 600,
-                  display: 'flex',
-                  alignItems: 'center',
-                  fontFamily: "'Poppins', sans-serif",
-                  fontSize: { xs: '1rem', md: '1.25rem' }
-                }}
-              >
-                <AssessmentIcon sx={{ mr: 1, fontSize: { xs: '1.2rem', md: '1.5rem' } }} /> Inventory Statistics
-              </Typography>
-              <Divider sx={{ mb: 3 }} />
-              <Grid container spacing={2}>
-                <Grid item xs={6}>
-                  <Box>
-                    <Typography 
-                      variant="body2" 
-                      color="text.secondary" 
-                      sx={{ mb: 0.5, fontSize: { xs: '0.75rem', md: '0.85rem' } }}
-                    >
-                      Products per Category
-                    </Typography>
-                    <Typography 
-                      variant="h6" 
-                      sx={{ 
-                        fontWeight: 'bold',
-                        fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' }
-                      }}
-                    >
-                      {stats.categoryCount > 0 
-                        ? (stats.productCount / stats.categoryCount).toFixed(1) 
-                        : '-'}
-                    </Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={6}>
-                  <Box>
-                    <Typography 
-                      variant="body2" 
-                      color="text.secondary" 
-                      sx={{ mb: 0.5, fontSize: { xs: '0.75rem', md: '0.85rem' } }}
-                    >
-                      Products per Supplier
-                    </Typography>
-                    <Typography 
-                      variant="h6" 
-                      sx={{ 
-                        fontWeight: 'bold',
-                        fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' }
-                      }}
-                    >
-                      {stats.supplierCount > 0 
-                        ? (stats.productCount / stats.supplierCount).toFixed(1) 
-                        : '-'}
-                    </Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={12}>
-                  <Divider sx={{ my: 2 }} />
-                </Grid>
-                <Grid item xs={12}>
-                  <Box>
-                    <Typography 
-                      variant="body2" 
-                      color="text.secondary" 
-                      sx={{ mb: 1, fontSize: { xs: '0.75rem', md: '0.85rem' } }}
-                    >
-                      Low Stock Percentage
-                    </Typography>
-                    <Box sx={{ position: 'relative', height: '24px', bgcolor: 'rgba(0,0,0,0.05)', borderRadius: '12px', overflow: 'hidden' }}>
-                      <Box 
-                        sx={{ 
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          height: '100%',
-                          width: `${stats.productCount > 0 ? Math.min(100, (stats.lowStockCount / stats.productCount) * 100) : 0}%`,
-                          bgcolor: stats.lowStockCount > (stats.productCount * 0.2) ? '#e74c3c' : 
-                                  stats.lowStockCount > (stats.productCount * 0.1) ? '#f39c12' : '#2ecc71',
-                          borderRadius: '12px',
-                          transition: 'width 0.5s ease'
-                        }}
-                      />
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Box sx={{ mt: 2 }}>
                       <Typography 
-                        variant="caption" 
-                        sx={{ 
-                          position: 'absolute',
-                          top: '50%',
-                          left: '50%',
-                          transform: 'translate(-50%, -50%)',
-                          fontWeight: 'bold',
-                          mixBlendMode: 'difference',
-                          color: 'white',
-                          fontSize: { xs: '0.7rem', md: '0.75rem' }
-                        }}
+                        variant="body2" 
+                        color="text.secondary" 
+                        sx={{ mb: 1, fontSize: { xs: '0.75rem', md: '0.85rem' } }}
                       >
-                        {stats.productCount > 0 
-                          ? `${Math.round((stats.lowStockCount / stats.productCount) * 100)}%` 
-                          : '0%'}
+                        <b>Inventory Health:</b> {stats.lowStockCount > 0 
+                          ? `${stats.lowStockCount} items need attention` 
+                          : 'All inventory levels are healthy'}
+                      </Typography>
+                      <Typography 
+                        variant="body2" 
+                        color="text.secondary"
+                        fontSize={{ xs: '0.75rem', md: '0.85rem' }}
+                      >
+                        <b>Average Stock Level:</b> {stats.productCount > 0 
+                          ? `${Math.round(stats.totalQuantity / stats.productCount)} units per product` 
+                          : 'No products in system'}
                       </Typography>
                     </Box>
-                    <Typography 
-                      variant="caption" 
-                      color="text.secondary" 
-                      sx={{ display: 'block', mt: 0.5, fontSize: { xs: '0.7rem', md: '0.75rem' } }}
-                    >
-                      {stats.lowStockCount} out of {stats.productCount} products are running low
-                    </Typography>
-                  </Box>
+                  </Grid>
                 </Grid>
-                <Grid item xs={12}>
-                  <Divider sx={{ my: 2 }} />
+              </Paper>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Paper 
+                elevation={2} 
+                sx={{ 
+                  p: { xs: 2, md: 3 }, 
+                  borderRadius: '12px',
+                  height: '100%'
+                }}
+              >
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    mb: 2, 
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    fontFamily: "'Poppins', sans-serif",
+                    fontSize: { xs: '1rem', md: '1.25rem' }
+                  }}
+                >
+                  <AssessmentIcon sx={{ mr: 1, fontSize: { xs: '1.2rem', md: '1.5rem' } }} /> Inventory Statistics
+                </Typography>
+                <Divider sx={{ mb: 3 }} />
+                <Grid container spacing={2}>
+                  <Grid item xs={6}>
+                    <Box>
+                      <Typography 
+                        variant="body2" 
+                        color="text.secondary" 
+                        sx={{ mb: 0.5, fontSize: { xs: '0.75rem', md: '0.85rem' } }}
+                      >
+                        Products per Category
+                      </Typography>
+                      <Typography 
+                        variant="h6" 
+                        sx={{ 
+                          fontWeight: 'bold',
+                          fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' }
+                        }}
+                      >
+                        {stats.categoryCount > 0 
+                          ? (stats.productCount / stats.categoryCount).toFixed(1) 
+                          : '-'}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Box>
+                      <Typography 
+                        variant="body2" 
+                        color="text.secondary" 
+                        sx={{ mb: 0.5, fontSize: { xs: '0.75rem', md: '0.85rem' } }}
+                      >
+                        Products per Supplier
+                      </Typography>
+                      <Typography 
+                        variant="h6" 
+                        sx={{ 
+                          fontWeight: 'bold',
+                          fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' }
+                        }}
+                      >
+                        {stats.supplierCount > 0 
+                          ? (stats.productCount / stats.supplierCount).toFixed(1) 
+                          : '-'}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Divider sx={{ my: 2 }} />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Box>
+                      <Typography 
+                        variant="body2" 
+                        color="text.secondary" 
+                        sx={{ mb: 1, fontSize: { xs: '0.75rem', md: '0.85rem' } }}
+                      >
+                        Low Stock Percentage
+                      </Typography>
+                      <Box sx={{ position: 'relative', height: '24px', bgcolor: 'rgba(0,0,0,0.05)', borderRadius: '12px', overflow: 'hidden' }}>
+                        <Box 
+                          sx={{ 
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            height: '100%',
+                            width: `${stats.productCount > 0 ? Math.min(100, (stats.lowStockCount / stats.productCount) * 100) : 0}%`,
+                            bgcolor: stats.lowStockCount > (stats.productCount * 0.2) ? '#e74c3c' : 
+                                    stats.lowStockCount > (stats.productCount * 0.1) ? '#f39c12' : '#2ecc71',
+                            borderRadius: '12px',
+                            transition: 'width 0.5s ease'
+                          }}
+                        />
+                        <Typography 
+                          variant="caption" 
+                          sx={{ 
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            fontWeight: 'bold',
+                            mixBlendMode: 'difference',
+                            color: 'white',
+                            fontSize: { xs: '0.7rem', md: '0.75rem' }
+                          }}
+                        >
+                          {stats.productCount > 0 
+                            ? `${Math.round((stats.lowStockCount / stats.productCount) * 100)}%` 
+                            : '0%'}
+                        </Typography>
+                      </Box>
+                      <Typography 
+                        variant="caption" 
+                        color="text.secondary" 
+                        sx={{ display: 'block', mt: 0.5, fontSize: { xs: '0.7rem', md: '0.75rem' } }}
+                      >
+                        {stats.lowStockCount} out of {stats.productCount} products are running low
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Divider sx={{ my: 2 }} />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography 
+                        variant="body2" 
+                        color="text.secondary"
+                        fontSize={{ xs: '0.75rem', md: '0.85rem' }}
+                      >
+                        Dashboard last updated:
+                      </Typography>
+                      <Typography 
+                        variant="body2" 
+                        fontWeight="medium"
+                        fontSize={{ xs: '0.75rem', md: '0.85rem' }}
+                      >
+                        {new Date().toLocaleTimeString()}
+                      </Typography>
+                    </Box>
+                  </Grid>
                 </Grid>
-                <Grid item xs={12}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography 
-                      variant="body2" 
-                      color="text.secondary"
-                      fontSize={{ xs: '0.75rem', md: '0.85rem' }}
-                    >
-                      Dashboard last updated:
-                    </Typography>
-                    <Typography 
-                      variant="body2" 
-                      fontWeight="medium"
-                      fontSize={{ xs: '0.75rem', md: '0.85rem' }}
-                    >
-                      {new Date().toLocaleTimeString()}
-                    </Typography>
-                  </Box>
-                </Grid>
-              </Grid>
-            </Paper>
+              </Paper>
+            </Grid>
           </Grid>
-        </Grid>
-      </Container>
-    </Box>
+        </Container>
+      </Box>
+    </Grow>
   );
 };
 

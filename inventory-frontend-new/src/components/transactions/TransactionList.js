@@ -23,7 +23,8 @@ import {
   Snackbar,
   Alert,
   Tooltip,
-  Divider
+  Divider,
+  Grow
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -271,338 +272,341 @@ const TransactionList = () => {
   }
 
   return (
-    <Box sx={{ p: 3, backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-        <Typography 
-          variant="h4" 
-          sx={{ 
-            fontWeight: 600,
-            backgroundImage: 'linear-gradient(45deg, #f39c12, #e67e22)',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            fontFamily: "'Poppins', sans-serif"
-          }}
-        >
-          Transactions
-        </Typography>
-        <Box>
-          <Button
-            variant="contained"
-            startIcon={<RefreshIcon />}
-            onClick={fetchTransactions}
+    <Grow in={true} timeout={500}>
+      <Box sx={{ p: 3, backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+          <Typography 
+            variant="h4" 
             sx={{ 
-              mr: 2,
-              backgroundColor: '#6c757d',
-              '&:hover': { backgroundColor: '#5a6268' },
-              fontWeight: 500,
-              textTransform: 'none',
-              borderRadius: '8px'
+              fontWeight: 600,
+              backgroundImage: 'linear-gradient(45deg, #3a7bd5, #00d2ff)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              fontFamily: "'Poppins', sans-serif"
             }}
           >
-            Refresh
-          </Button>
-          <Button 
-            variant="contained" 
-            startIcon={<AddIcon />}
-            component={Link}
-            to="/transactions/new"
-            sx={{ 
-              backgroundColor: '#f39c12',
-              '&:hover': { backgroundColor: '#e67e22' },
-              fontWeight: 500,
-              textTransform: 'none',
-              borderRadius: '8px'
-            }}
-          >
-            New Transaction
-          </Button>
-        </Box>
-      </Box>
-
-      {/* Search and Filters */}
-      <Paper elevation={2} sx={{ p: 3, mb: 3, borderRadius: '12px' }}>
-        <Grid container spacing={2}>
-          <Grid item xs={12} md={5}>
-            <TextField
-              fullWidth
-              variant="outlined"
-              placeholder="Search transactions..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: '8px',
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#f39c12',
-                  },
-                },
-              }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon sx={{ color: '#f39c12' }} />
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </Grid>
-          <Grid item xs={12} md={3}>
-            <FormControl fullWidth>
-              <InputLabel id="transaction-type-label">Transaction Type</InputLabel>
-              <Select
-                labelId="transaction-type-label"
-                name="type"
-                value={filters.type}
-                onChange={handleFilterChange}
-                label="Transaction Type"
-                sx={{ borderRadius: '8px' }}
-              >
-                <MenuItem value="">All Types</MenuItem>
-                <MenuItem value="PURCHASE">Purchase</MenuItem>
-                <MenuItem value="SALE">Sale</MenuItem>
-                <MenuItem value="RETURN">Return</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} md={2}>
-            <FormControl fullWidth>
-              <InputLabel id="date-filter-label">Date Range</InputLabel>
-              <Select
-                labelId="date-filter-label"
-                name="dateRange"
-                value={dateRange}
-                onChange={(e) => handleDateRangeChange(e.target.value)}
-                label="Date Range"
-                sx={{ borderRadius: '8px' }}
-              >
-                <MenuItem value="all">All Time</MenuItem>
-                <MenuItem value="today">Today</MenuItem>
-                <MenuItem value="week">This Week</MenuItem>
-                <MenuItem value="month">This Month</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} md={2} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-            <Button 
-              variant="outlined" 
-              onClick={clearFilters}
-              disabled={!searchTerm && !filters.type && !filters.startDate && !filters.endDate}
+            Transactions
+          </Typography>
+          <Box>
+            <Button
+              variant="contained"
+              startIcon={<RefreshIcon />}
+              onClick={fetchTransactions}
               sx={{ 
-                borderColor: '#f39c12',
-                color: '#f39c12',
+                mr: 2,
+                backgroundColor: '#6c757d',
+                '&:hover': { backgroundColor: '#5a6268' },
                 fontWeight: 500,
                 textTransform: 'none',
-                borderRadius: '8px',
-                '&:hover': {
-                  borderColor: '#e67e22',
-                  backgroundColor: 'rgba(243, 156, 18, 0.04)'
-                }
+                borderRadius: '8px'
               }}
             >
-              Clear Filters
+              Refresh
             </Button>
-          </Grid>
-        </Grid>
-      </Paper>
+            <Button 
+              variant="contained" 
+              startIcon={<AddIcon />}
+              component={Link}
+              to="/transactions/new"
+              sx={{ 
+                backgroundColor: '#28a745',
+                '&:hover': { backgroundColor: '#218838' },
+                fontWeight: 500,
+                textTransform: 'none',
+                borderRadius: '8px'
+              }}
+            >
+              New Transaction
+            </Button>
+          </Box>
+        </Box>
 
-      {/* Transactions Table */}
-      <TableContainer 
-        component={Paper} 
-        elevation={2} 
-        sx={{ 
-          borderRadius: '12px',
-          overflow: 'hidden',
-          mb: 3
-        }}
-      >
-        <Table>
-          <TableHead sx={{ backgroundColor: 'rgba(243, 156, 18, 0.1)' }}>
-            <TableRow>
-              <TableCell sx={{ fontWeight: 600, color: '#f39c12' }}>Date</TableCell>
-              <TableCell sx={{ fontWeight: 600, color: '#f39c12' }}>Product</TableCell>
-              <TableCell sx={{ fontWeight: 600, color: '#f39c12' }}>Type</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600, color: '#f39c12' }}>Quantity</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 600, color: '#f39c12' }}>Price</TableCell>
-              <TableCell sx={{ fontWeight: 600, color: '#f39c12' }}>Notes</TableCell>
-              <TableCell align="center" sx={{ fontWeight: 600, color: '#f39c12' }}>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredTransactions.length > 0 ? (
-              filteredTransactions.map((transaction) => (
-                <TableRow 
-                  key={transaction.id}
-                  hover
-                  sx={{
-                    '&:hover': {
-                      backgroundColor: 'rgba(243, 156, 18, 0.03)'
-                    }
-                  }}
+        {/* Search and Filters */}
+        <Paper elevation={2} sx={{ p: 3, mb: 3, borderRadius: '12px' }}>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={5}>
+              <TextField
+                fullWidth
+                variant="outlined"
+                placeholder="Search transactions..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '8px',
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#3a7bd5',
+                    },
+                  },
+                }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon sx={{ color: '#3a7bd5' }} />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={3}>
+              <FormControl fullWidth>
+                <InputLabel id="transaction-type-label">Transaction Type</InputLabel>
+                <Select
+                  labelId="transaction-type-label"
+                  name="type"
+                  value={filters.type}
+                  onChange={handleFilterChange}
+                  label="Transaction Type"
+                  sx={{ borderRadius: '8px' }}
                 >
-                  <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <CalendarIcon sx={{ color: '#f39c12', mr: 1, fontSize: '1.1rem' }} />
+                  <MenuItem value="">All Types</MenuItem>
+                  <MenuItem value="PURCHASE">Purchase</MenuItem>
+                  <MenuItem value="SALE">Sale</MenuItem>
+                  <MenuItem value="RETURN">Return</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={2}>
+              <FormControl fullWidth>
+                <InputLabel id="date-filter-label">Date Range</InputLabel>
+                <Select
+                  labelId="date-filter-label"
+                  name="dateRange"
+                  value={dateRange}
+                  onChange={(e) => handleDateRangeChange(e.target.value)}
+                  label="Date Range"
+                  sx={{ borderRadius: '8px' }}
+                >
+                  <MenuItem value="all">All Time</MenuItem>
+                  <MenuItem value="today">Today</MenuItem>
+                  <MenuItem value="week">This Week</MenuItem>
+                  <MenuItem value="month">This Month</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={2} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+              <Button 
+                variant="outlined" 
+                onClick={clearFilters}
+                disabled={!searchTerm && !filters.type && !filters.startDate && !filters.endDate}
+                sx={{ 
+                  borderColor: '#3a7bd5',
+                  color: '#3a7bd5',
+                  fontWeight: 500,
+                  textTransform: 'none',
+                  borderRadius: '8px',
+                  '&:hover': {
+                    borderColor: '#2a6ac5',
+                    backgroundColor: 'rgba(58, 123, 213, 0.04)'
+                  }
+                }}
+              >
+                Clear Filters
+              </Button>
+            </Grid>
+          </Grid>
+        </Paper>
+
+        {/* Transactions Table */}
+        <TableContainer 
+          component={Paper} 
+          elevation={2} 
+          sx={{ 
+            borderRadius: '12px',
+            overflow: 'hidden',
+            mb: 3
+          }}
+        >
+          <Table>
+            <TableHead sx={{ backgroundColor: 'rgba(58, 123, 213, 0.1)' }}>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 600, color: '#3a7bd5' }}>Date</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#3a7bd5' }}>Product</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#3a7bd5' }}>Type</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 600, color: '#3a7bd5' }}>Quantity</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 600, color: '#3a7bd5' }}>Price</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#3a7bd5' }}>Notes</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 600, color: '#3a7bd5' }}>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filteredTransactions.length > 0 ? (
+                filteredTransactions.map((transaction) => (
+                  <TableRow 
+                    key={transaction.id}
+                    hover
+                    sx={{
+                      '&:hover': {
+                        backgroundColor: 'rgba(58, 123, 213, 0.03)'
+                      }
+                    }}
+                  >
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <CalendarIcon sx={{ color: '#3a7bd5', mr: 1, fontSize: '1.1rem' }} />
+                        <Typography variant="body2">
+                          {formatDate(transaction.transactionDate)}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Box
+                          sx={{
+                            width: 36,
+                            height: 36,
+                            borderRadius: '6px',
+                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            mr: 1.5
+                          }}
+                        >
+                          <ProductIcon sx={{ color: '#3498db', fontSize: '1.1rem' }} />
+                        </Box>
+                        <Box>
+                          <Typography variant="body2" fontWeight={500}>
+                            {transaction.productName || 'Unknown Product'}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      {getTransactionTypeChip(transaction.transactionType)}
+                    </TableCell>
+                    <TableCell align="right">
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          fontWeight: 600,
+                          color: transaction.transactionType === 'SALE' ? '#e74c3c' : '#2ecc71'
+                        }}
+                      >
+                        {transaction.transactionType === 'SALE' ? 
+                          `-${Math.abs(transaction.quantity)}` : 
+                          `+${Math.abs(transaction.quantity)}`
+                        }
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="right">
                       <Typography variant="body2">
-                        {formatDate(transaction.transactionDate)}
+                        {formatCurrency(transaction.unitPrice)}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          maxWidth: '200px',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        {transaction.notes || '-'}
+                      </Typography>
+                    </TableCell>
+    
+                    <TableCell align="center">
+                      <Box>
+                        <Tooltip title="View Invoice">
+                          <IconButton 
+                            size="small" 
+                            color="info" 
+                            component={Link}
+                            to={`/transactions/${transaction.id}`}
+                            sx={{ 
+                              mx: 0.5,
+                              color: '#3498db',
+                              '&:hover': {
+                                backgroundColor: 'rgba(52, 152, 219, 0.1)'
+                              }
+                            }}
+                          >
+                            <ReceiptIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Edit">
+                          <IconButton 
+                            size="small" 
+                            color="primary" 
+                            component={Link}
+                            to={`/transactions/${transaction.id}/edit`}
+                            sx={{ 
+                              mx: 0.5,
+                              color: '#3a7bd5',
+                              '&:hover': {
+                                backgroundColor: 'rgba(58, 123, 213, 0.1)'
+                              }
+                            }}
+                          >
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Delete">
+                          <IconButton 
+                            size="small" 
+                            color="error"
+                            onClick={() => handleDeleteTransaction(transaction.id)}
+                            sx={{ 
+                              mx: 0.5,
+                              '&:hover': {
+                                backgroundColor: 'rgba(231, 76, 60, 0.1)'
+                              }
+                            }}
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <TransactionIcon sx={{ fontSize: 60, color: '#ccc', mb: 2 }} />
+                      <Typography variant="h6" color="text.secondary">
+                        No transactions found
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1, mb: 2 }}>
+                        {searchTerm || filters.type || filters.startDate || filters.endDate ? 
+                          'Try adjusting your filters or search criteria' : 
+                          'Add your first transaction using the button above'}
                       </Typography>
                     </Box>
                   </TableCell>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Box
-                        sx={{
-                          width: 36,
-                          height: 36,
-                          borderRadius: '6px',
-                          backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          mr: 1.5
-                        }}
-                      >
-                        <ProductIcon sx={{ color: '#3498db', fontSize: '1.1rem' }} />
-                      </Box>
-                      <Box>
-                        <Typography variant="body2" fontWeight={500}>
-                          {transaction.productName || 'Unknown Product'}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    {getTransactionTypeChip(transaction.transactionType)}
-                  </TableCell>
-                  <TableCell align="right">
-                    <Typography 
-                      variant="body2" 
-                      sx={{ 
-                        fontWeight: 600,
-                        color: transaction.transactionType === 'SALE' ? '#e74c3c' : '#2ecc71'
-                      }}
-                    >
-                      {transaction.transactionType === 'SALE' ? 
-                        `-${Math.abs(transaction.quantity)}` : 
-                        `+${Math.abs(transaction.quantity)}`
-                      }
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="right">
-                    <Typography variant="body2">
-                      {formatCurrency(transaction.unitPrice)}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ 
-                        maxWidth: '200px',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap'
-                      }}
-                    >
-                      {transaction.notes || '-'}
-                    </Typography>
-                  </TableCell>
-  
-<TableCell align="center">
-  <Box>
-    <Tooltip title="View Invoice">
-      <IconButton 
-        size="small" 
-        color="info" 
-        component={Link}
-        to={`/transactions/${transaction.id}`}
-        sx={{ 
-          mx: 0.5,
-          color: '#3498db',
-          '&:hover': {
-            backgroundColor: 'rgba(52, 152, 219, 0.1)'
-          }
-        }}
-      >
-        <ReceiptIcon fontSize="small" />
-      </IconButton>
-    </Tooltip>
-    <Tooltip title="Edit">
-      <IconButton 
-        size="small" 
-        color="primary" 
-        component={Link}
-        to={`/transactions/${transaction.id}/edit`}
-        sx={{ 
-          mx: 0.5,
-          '&:hover': {
-            backgroundColor: 'rgba(52, 152, 219, 0.1)'
-          }
-        }}
-      >
-        <EditIcon fontSize="small" />
-      </IconButton>
-    </Tooltip>
-    <Tooltip title="Delete">
-      <IconButton 
-        size="small" 
-        color="error"
-        onClick={() => handleDeleteTransaction(transaction.id)}
-        sx={{ 
-          mx: 0.5,
-          '&:hover': {
-            backgroundColor: 'rgba(231, 76, 60, 0.1)'
-          }
-        }}
-      >
-        <DeleteIcon fontSize="small" />
-      </IconButton>
-    </Tooltip>
-  </Box>
-</TableCell>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <TransactionIcon sx={{ fontSize: 60, color: '#ccc', mb: 2 }} />
-                    <Typography variant="h6" color="text.secondary">
-                      No transactions found
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1, mb: 2 }}>
-                      {searchTerm || filters.type || filters.startDate || filters.endDate ? 
-                        'Try adjusting your filters or search criteria' : 
-                        'Add your first transaction using the button above'}
-                    </Typography>
-                  </Box>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
 
-      {/* Snackbar for notifications */}
-      <Snackbar 
-        open={snackbar.open} 
-        autoHideDuration={6000} 
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert 
-          onClose={handleCloseSnackbar} 
-          severity={snackbar.severity} 
-          variant="filled"
-          sx={{ 
-            width: '100%',
-            boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-            borderRadius: '8px'
-          }}
+        {/* Snackbar for notifications */}
+        <Snackbar 
+          open={snackbar.open} 
+          autoHideDuration={6000} 
+          onClose={handleCloseSnackbar}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-    </Box>
+          <Alert 
+            onClose={handleCloseSnackbar} 
+            severity={snackbar.severity} 
+            variant="filled"
+            sx={{ 
+              width: '100%',
+              boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+              borderRadius: '8px'
+            }}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
+      </Box>
+    </Grow>
   );
 };
 

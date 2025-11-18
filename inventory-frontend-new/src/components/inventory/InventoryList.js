@@ -27,7 +27,8 @@ import {
   Snackbar,
   Alert,
   Tooltip,
-  Divider
+  Divider,
+  Grow
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -386,436 +387,438 @@ const ModernInventoryList = () => {
   }
 
   return (
-    <Box sx={{ p: 3, backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-        <Typography 
-          variant="h4" 
-          sx={{ 
-            fontWeight: 600,
-            backgroundImage: 'linear-gradient(45deg, #3a7bd5, #00d2ff)',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            fontFamily: "'Poppins', sans-serif"
-          }}
-        >
-          Inventory Management
-        </Typography>
-        <Box>
-          <Button
-            variant="contained"
-            startIcon={<RefreshIcon />}
-            onClick={fetchData}
+    <Grow in={true} timeout={500}>
+      <Box sx={{ p: 3, backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+          <Typography 
+            variant="h4" 
             sx={{ 
-              mr: 2,
-              backgroundColor: '#6c757d',
-              '&:hover': { backgroundColor: '#5a6268' },
-              fontWeight: 500,
-              textTransform: 'none',
-              borderRadius: '8px'
+              fontWeight: 600,
+              backgroundImage: 'linear-gradient(45deg, #3a7bd5, #00d2ff)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              fontFamily: "'Poppins', sans-serif"
             }}
           >
-            Refresh
-          </Button>
-          <Button 
-            variant="contained" 
-            startIcon={<AddIcon />}
-            onClick={() => handleOpenDialog()}
-            disabled={getAvailableProducts().length === 0}
-            sx={{ 
-              backgroundColor: '#28a745',
-              '&:hover': { backgroundColor: '#218838' },
-              fontWeight: 500,
-              textTransform: 'none',
-              borderRadius: '8px'
-            }}
-          >
-            Add Inventory
-          </Button>
-        </Box>
-      </Box>
-
-      {/* Search Bar */}
-      <Paper elevation={2} sx={{ p: 2, mb: 3, borderRadius: '12px' }}>
-        <TextField
-          fullWidth
-          variant="outlined"
-          placeholder="Search by product name, SKU or location..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          sx={{
-            '& .MuiOutlinedInput-root': {
-              borderRadius: '8px',
-              '&.Mui-focused fieldset': {
-                borderColor: '#3a7bd5',
-              },
-            },
-          }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon sx={{ color: '#3a7bd5' }} />
-              </InputAdornment>
-            ),
-          }}
-        />
-      </Paper>
-
-      {/* Inventory Table */}
-      <TableContainer 
-        component={Paper} 
-        elevation={2} 
-        sx={{ 
-          borderRadius: '12px',
-          overflow: 'hidden',
-          mb: 3
-        }}
-      >
-        <Table>
-          <TableHead sx={{ backgroundColor: 'rgba(58, 123, 213, 0.1)' }}>
-            <TableRow>
-              <TableCell sx={{ fontWeight: 600, color: '#3a7bd5' }}>Product</TableCell>
-              <TableCell sx={{ fontWeight: 600, color: '#3a7bd5' }}>SKU</TableCell>
-              <TableCell align="center" sx={{ fontWeight: 600, color: '#3a7bd5' }}>Quantity</TableCell>
-              <TableCell align="center" sx={{ fontWeight: 600, color: '#3a7bd5' }}>Reorder Level</TableCell>
-              <TableCell sx={{ fontWeight: 600, color: '#3a7bd5' }}>Location</TableCell>
-              <TableCell align="center" sx={{ fontWeight: 600, color: '#3a7bd5' }}>Status</TableCell>
-              <TableCell align="center" sx={{ fontWeight: 600, color: '#3a7bd5' }}>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredInventory.length > 0 ? (
-              filteredInventory.map((item) => (
-                <TableRow 
-                  key={item.id}
-                  hover
-                  sx={{
-                    '&:hover': {
-                      backgroundColor: 'rgba(58, 123, 213, 0.03)'
-                    }
-                  }}
-                >
-                  <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Box
-                        sx={{
-                          width: 40,
-                          height: 40,
-                          borderRadius: '8px',
-                          backgroundColor: isLowStock(item) ? 'rgba(231, 76, 60, 0.1)' : 'rgba(58, 123, 213, 0.1)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          mr: 2
-                        }}
-                      >
-                        <InventoryIcon sx={{ color: isLowStock(item) ? '#e74c3c' : '#3a7bd5' }} />
-                      </Box>
-                      <Box>
-                        <Typography variant="body1" fontWeight={500}>{item.productName || 'Unknown Product'}</Typography>
-                        {item.productCategoryName && (
-                          <Typography variant="caption" color="text.secondary">{item.productCategoryName}</Typography>
-                        )}
-                      </Box>
-                    </Box>
-                  </TableCell>
-                  <TableCell>{item.productSku || '-'}</TableCell>
-                  <TableCell align="center">
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <IconButton 
-                        size="small" 
-                        color="error" 
-                        onClick={() => handleUpdateQuantity(item.productId, -1)}
-                        disabled={item.quantity <= 0}
-                        sx={{ 
-                          border: '1px solid rgba(231, 76, 60, 0.3)',
-                          mr: 1,
-                          width: 30,
-                          height: 30,
-                          borderRadius: '50%',
-                          p: 0
-                        }}
-                      >
-                        <RemoveIcon fontSize="small" />
-                      </IconButton>
-                      <Typography 
-                        variant="body2" 
-                        sx={{ 
-                          fontWeight: 600,
-                          minWidth: '40px',
-                          textAlign: 'center',
-                          color: isLowStock(item) ? '#e74c3c' : 'inherit'
-                        }}
-                      >
-                        {item.quantity}
-                      </Typography>
-                      <IconButton 
-                        size="small" 
-                        color="primary" 
-                        onClick={() => handleUpdateQuantity(item.productId, 1)}
-                        sx={{ 
-                          border: '1px solid rgba(58, 123, 213, 0.3)',
-                          ml: 1,
-                          width: 30,
-                          height: 30,
-                          borderRadius: '50%',
-                          p: 0
-                        }}
-                      >
-                        <AddIcon fontSize="small" />
-                      </IconButton>
-                    </Box>
-                  </TableCell>
-                  <TableCell align="center">{item.reorderLevel}</TableCell>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <LocationIcon sx={{ color: 'rgba(58, 123, 213, 0.6)', mr: 1, fontSize: '1rem' }} />
-                      <Typography variant="body2">{item.location || 'Not specified'}</Typography>
-                    </Box>
-                  </TableCell>
-                  <TableCell align="center">
-                    {isLowStock(item) ? (
-                      <Chip 
-                        icon={<WarningIcon />} 
-                        label="Low Stock" 
-                        size="small"
-                        sx={{ 
-                          backgroundColor: 'rgba(231, 76, 60, 0.1)',
-                          color: '#e74c3c',
-                          fontWeight: 500,
-                          '& .MuiChip-icon': {
-                            color: '#e74c3c'
-                          }
-                        }}
-                      />
-                    ) : (
-                      <Chip 
-                        icon={<CheckCircleIcon />} 
-                        label="In Stock" 
-                        size="small"
-                        sx={{ 
-                          backgroundColor: 'rgba(46, 204, 113, 0.1)',
-                          color: '#2ecc71',
-                          fontWeight: 500,
-                          '& .MuiChip-icon': {
-                            color: '#2ecc71'
-                          }
-                        }}
-                      />
-                    )}
-                  </TableCell>
-                  <TableCell align="center">
-                    <Tooltip title="Edit">
-                      <IconButton 
-                        size="small" 
-                        onClick={() => handleOpenDialog(item)}
-                        sx={{ 
-                          color: '#3a7bd5',
-                          '&:hover': {
-                            backgroundColor: 'rgba(58, 123, 213, 0.1)'
-                          }
-                        }}
-                      >
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
-                  <Typography variant="h6" color="text.secondary">
-                    No inventory items found
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                    {searchTerm ? 'Try adjusting your search terms' : 'Add your first inventory item using the button above'}
-                  </Typography>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
-      {/* Add/Edit Inventory Dialog */}
-      <Dialog 
-        open={openDialog} 
-        onClose={handleCloseDialog}
-        maxWidth="md"
-        fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: '12px',
-            padding: 2
-          }
-        }}
-      >
-        <DialogTitle sx={{ pb: 1 }}>
-          <Typography variant="h5" fontWeight={600} color="#3a7bd5">
-            {isEditing ? 'Update Inventory' : 'Add New Inventory'}
+            Inventory Management
           </Typography>
-        </DialogTitle>
-        <Divider />
-        <DialogContent sx={{ pt: 3 }}>
-          {isEditing ? (
-            <Typography variant="subtitle1" sx={{ mb: 3, fontWeight: 500 }}>
-              Product: {currentInventory.productName}
-            </Typography>
-          ) : (
-            <FormControl fullWidth margin="normal" sx={{ mb: 3 }}>
-              <InputLabel id="product-select-label">Product</InputLabel>
-              <Select
-                labelId="product-select-label"
-                name="productId"
-                value={currentInventory.productId || ''}
-                onChange={handleProductChange}
-                label="Product"
-                required
-                sx={{ borderRadius: '8px' }}
-              >
-                <MenuItem value="">
-                  <em>Select a product</em>
-                </MenuItem>
-                {getAvailableProducts().map(product => (
-                  <MenuItem key={product.id} value={product.id}>
-                    {product.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          )}
-          
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={4}>
-              <TextField
-                fullWidth
-                name="quantity"
-                label="Quantity"
-                type="number"
-                variant="outlined"
-                value={currentInventory.quantity}
-                onChange={handleInputChange}
-                InputProps={{ inputProps: { min: 0 } }}
-                sx={{ borderRadius: '8px' }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <TextField
-                fullWidth
-                name="reorderLevel"
-                label="Reorder Level"
-                type="number"
-                variant="outlined"
-                value={currentInventory.reorderLevel}
-                onChange={handleInputChange}
-                InputProps={{ inputProps: { min: 0 } }}
-                sx={{ borderRadius: '8px' }}
-                helperText="Alert when stock falls below this level"
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <TextField
-                fullWidth
-                name="reorderQuantity"
-                label="Reorder Quantity"
-                type="number"
-                variant="outlined"
-                value={currentInventory.reorderQuantity}
-                onChange={handleInputChange}
-                InputProps={{ inputProps: { min: 0 } }}
-                sx={{ borderRadius: '8px' }}
-                helperText="Suggested quantity to purchase when reordering"
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                name="location"
-                label="Storage Location"
-                type="text"
-                variant="outlined"
-                value={currentInventory.location || ''}
-                onChange={handleInputChange}
-                sx={{ borderRadius: '8px' }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <LocationIcon sx={{ color: 'rgba(58, 123, 213, 0.6)' }} />
-                    </InputAdornment>
-                  ),
-                }}
-                helperText="Warehouse location, shelf number, etc."
-              />
-            </Grid>
-          </Grid>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button 
-            onClick={handleCloseDialog} 
-            sx={{ 
-              color: '#6c757d',
-              fontWeight: 500,
-              borderRadius: '8px'
-            }}
-          >
-            Cancel
-          </Button>
-          
-          {isEditing && (
-            <Button 
-              onClick={handleDeleteInventory}
+          <Box>
+            <Button
               variant="contained"
-              color="error" 
+              startIcon={<RefreshIcon />}
+              onClick={fetchData}
               sx={{ 
+                mr: 2,
+                backgroundColor: '#6c757d',
+                '&:hover': { backgroundColor: '#5a6268' },
                 fontWeight: 500,
                 textTransform: 'none',
-                borderRadius: '8px',
-                mr: 1
+                borderRadius: '8px'
               }}
-              startIcon={<DeleteIcon />}
             >
-              Delete
+              Refresh
             </Button>
-          )}
-          
-          <Button 
-            onClick={handleSaveInventory} 
-            variant="contained"
+            <Button 
+              variant="contained" 
+              startIcon={<AddIcon />}
+              onClick={() => handleOpenDialog()}
+              disabled={getAvailableProducts().length === 0}
+              sx={{ 
+                backgroundColor: '#28a745',
+                '&:hover': { backgroundColor: '#218838' },
+                fontWeight: 500,
+                textTransform: 'none',
+                borderRadius: '8px'
+              }}
+            >
+              Add Inventory
+            </Button>
+          </Box>
+        </Box>
+
+        {/* Search Bar */}
+        <Paper elevation={2} sx={{ p: 2, mb: 3, borderRadius: '12px' }}>
+          <TextField
+            fullWidth
+            variant="outlined"
+            placeholder="Search by product name, SKU or location..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                borderRadius: '8px',
+                '&.Mui-focused fieldset': {
+                  borderColor: '#3a7bd5',
+                },
+              },
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon sx={{ color: '#3a7bd5' }} />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Paper>
+
+        {/* Inventory Table */}
+        <TableContainer 
+          component={Paper} 
+          elevation={2} 
+          sx={{ 
+            borderRadius: '12px',
+            overflow: 'hidden',
+            mb: 3
+          }}
+        >
+          <Table>
+            <TableHead sx={{ backgroundColor: 'rgba(58, 123, 213, 0.1)' }}>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 600, color: '#3a7bd5' }}>Product</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#3a7bd5' }}>SKU</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 600, color: '#3a7bd5' }}>Quantity</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 600, color: '#3a7bd5' }}>Reorder Level</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#3a7bd5' }}>Location</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 600, color: '#3a7bd5' }}>Status</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 600, color: '#3a7bd5' }}>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filteredInventory.length > 0 ? (
+                filteredInventory.map((item) => (
+                  <TableRow 
+                    key={item.id}
+                    hover
+                    sx={{
+                      '&:hover': {
+                        backgroundColor: 'rgba(58, 123, 213, 0.03)'
+                      }
+                    }}
+                  >
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Box
+                          sx={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: '8px',
+                            backgroundColor: isLowStock(item) ? 'rgba(231, 76, 60, 0.1)' : 'rgba(58, 123, 213, 0.1)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            mr: 2
+                          }}
+                        >
+                          <InventoryIcon sx={{ color: isLowStock(item) ? '#e74c3c' : '#3a7bd5' }} />
+                        </Box>
+                        <Box>
+                          <Typography variant="body1" fontWeight={500}>{item.productName || 'Unknown Product'}</Typography>
+                          {item.productCategoryName && (
+                            <Typography variant="caption" color="text.secondary">{item.productCategoryName}</Typography>
+                          )}
+                        </Box>
+                      </Box>
+                    </TableCell>
+                    <TableCell>{item.productSku || '-'}</TableCell>
+                    <TableCell align="center">
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <IconButton 
+                          size="small" 
+                          color="error" 
+                          onClick={() => handleUpdateQuantity(item.productId, -1)}
+                          disabled={item.quantity <= 0}
+                          sx={{ 
+                            border: '1px solid rgba(231, 76, 60, 0.3)',
+                            mr: 1,
+                            width: 30,
+                            height: 30,
+                            borderRadius: '50%',
+                            p: 0
+                          }}
+                        >
+                          <RemoveIcon fontSize="small" />
+                        </IconButton>
+                        <Typography 
+                          variant="body2" 
+                          sx={{ 
+                            fontWeight: 600,
+                            minWidth: '40px',
+                            textAlign: 'center',
+                            color: isLowStock(item) ? '#e74c3c' : 'inherit'
+                          }}
+                        >
+                          {item.quantity}
+                        </Typography>
+                        <IconButton 
+                          size="small" 
+                          color="primary" 
+                          onClick={() => handleUpdateQuantity(item.productId, 1)}
+                          sx={{ 
+                            border: '1px solid rgba(58, 123, 213, 0.3)',
+                            ml: 1,
+                            width: 30,
+                            height: 30,
+                            borderRadius: '50%',
+                            p: 0
+                          }}
+                        >
+                          <AddIcon fontSize="small" />
+                        </IconButton>
+                      </Box>
+                    </TableCell>
+                    <TableCell align="center">{item.reorderLevel}</TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <LocationIcon sx={{ color: 'rgba(58, 123, 213, 0.6)', mr: 1, fontSize: '1rem' }} />
+                        <Typography variant="body2">{item.location || 'Not specified'}</Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell align="center">
+                      {isLowStock(item) ? (
+                        <Chip 
+                          icon={<WarningIcon />} 
+                          label="Low Stock" 
+                          size="small"
+                          sx={{ 
+                            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                            color: '#e74c3c',
+                            fontWeight: 500,
+                            '& .MuiChip-icon': {
+                              color: '#e74c3c'
+                            }
+                          }}
+                        />
+                      ) : (
+                        <Chip 
+                          icon={<CheckCircleIcon />} 
+                          label="In Stock" 
+                          size="small"
+                          sx={{ 
+                            backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                            color: '#2ecc71',
+                            fontWeight: 500,
+                            '& .MuiChip-icon': {
+                              color: '#2ecc71'
+                            }
+                          }}
+                        />
+                      )}
+                    </TableCell>
+                    <TableCell align="center">
+                      <Tooltip title="Edit">
+                        <IconButton 
+                          size="small" 
+                          onClick={() => handleOpenDialog(item)}
+                          sx={{ 
+                            color: '#3a7bd5',
+                            '&:hover': {
+                              backgroundColor: 'rgba(58, 123, 213, 0.1)'
+                            }
+                          }}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
+                    <Typography variant="h6" color="text.secondary">
+                      No inventory items found
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                      {searchTerm ? 'Try adjusting your search terms' : 'Add your first inventory item using the button above'}
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        {/* Add/Edit Inventory Dialog */}
+        <Dialog 
+          open={openDialog} 
+          onClose={handleCloseDialog}
+          maxWidth="md"
+          fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: '12px',
+              padding: 2
+            }
+          }}
+        >
+          <DialogTitle sx={{ pb: 1 }}>
+            <Typography variant="h5" fontWeight={600} color="#3a7bd5">
+              {isEditing ? 'Update Inventory' : 'Add New Inventory'}
+            </Typography>
+          </DialogTitle>
+          <Divider />
+          <DialogContent sx={{ pt: 3 }}>
+            {isEditing ? (
+              <Typography variant="subtitle1" sx={{ mb: 3, fontWeight: 500 }}>
+                Product: {currentInventory.productName}
+              </Typography>
+            ) : (
+              <FormControl fullWidth margin="normal" sx={{ mb: 3 }}>
+                <InputLabel id="product-select-label">Product</InputLabel>
+                <Select
+                  labelId="product-select-label"
+                  name="productId"
+                  value={currentInventory.productId || ''}
+                  onChange={handleProductChange}
+                  label="Product"
+                  required
+                  sx={{ borderRadius: '8px' }}
+                >
+                  <MenuItem value="">
+                    <em>Select a product</em>
+                  </MenuItem>
+                  {getAvailableProducts().map(product => (
+                    <MenuItem key={product.id} value={product.id}>
+                      {product.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
+            
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  fullWidth
+                  name="quantity"
+                  label="Quantity"
+                  type="number"
+                  variant="outlined"
+                  value={currentInventory.quantity}
+                  onChange={handleInputChange}
+                  InputProps={{ inputProps: { min: 0 } }}
+                  sx={{ borderRadius: '8px' }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  fullWidth
+                  name="reorderLevel"
+                  label="Reorder Level"
+                  type="number"
+                  variant="outlined"
+                  value={currentInventory.reorderLevel}
+                  onChange={handleInputChange}
+                  InputProps={{ inputProps: { min: 0 } }}
+                  sx={{ borderRadius: '8px' }}
+                  helperText="Alert when stock falls below this level"
+                />
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  fullWidth
+                  name="reorderQuantity"
+                  label="Reorder Quantity"
+                  type="number"
+                  variant="outlined"
+                  value={currentInventory.reorderQuantity}
+                  onChange={handleInputChange}
+                  InputProps={{ inputProps: { min: 0 } }}
+                  sx={{ borderRadius: '8px' }}
+                  helperText="Suggested quantity to purchase when reordering"
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  name="location"
+                  label="Storage Location"
+                  type="text"
+                  variant="outlined"
+                  value={currentInventory.location || ''}
+                  onChange={handleInputChange}
+                  sx={{ borderRadius: '8px' }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <LocationIcon sx={{ color: 'rgba(58, 123, 213, 0.6)' }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                  helperText="Warehouse location, shelf number, etc."
+                />
+              </Grid>
+            </Grid>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button 
+              onClick={handleCloseDialog} 
+              sx={{ 
+                color: '#6c757d',
+                fontWeight: 500,
+                borderRadius: '8px'
+              }}
+            >
+              Cancel
+            </Button>
+            
+            {isEditing && (
+              <Button 
+                onClick={handleDeleteInventory}
+                variant="contained"
+                color="error" 
+                sx={{ 
+                  fontWeight: 500,
+                  textTransform: 'none',
+                  borderRadius: '8px',
+                  mr: 1
+                }}
+                startIcon={<DeleteIcon />}
+              >
+                Delete
+              </Button>
+            )}
+            
+            <Button 
+              onClick={handleSaveInventory} 
+              variant="contained"
+              sx={{ 
+                backgroundColor: '#3a7bd5',
+                '&:hover': { backgroundColor: '#2a6ac5' },
+                fontWeight: 500,
+                textTransform: 'none',
+                borderRadius: '8px'
+              }}
+            >
+              {isEditing ? 'Update' : 'Add'} Inventory
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Snackbar for notifications */}
+        <Snackbar 
+          open={snackbar.open} 
+          autoHideDuration={6000} 
+          onClose={handleCloseSnackbar}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        >
+          <Alert 
+            onClose={handleCloseSnackbar} 
+            severity={snackbar.severity} 
+            variant="filled"
             sx={{ 
-              backgroundColor: '#3a7bd5',
-              '&:hover': { backgroundColor: '#2a6ac5' },
-              fontWeight: 500,
-              textTransform: 'none',
+              width: '100%',
+              boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
               borderRadius: '8px'
             }}
           >
-            {isEditing ? 'Update' : 'Add'} Inventory
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Snackbar for notifications */}
-      <Snackbar 
-        open={snackbar.open} 
-        autoHideDuration={6000} 
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert 
-          onClose={handleCloseSnackbar} 
-          severity={snackbar.severity} 
-          variant="filled"
-          sx={{ 
-            width: '100%',
-            boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-            borderRadius: '8px'
-          }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-    </Box>
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
+      </Box>
+    </Grow>
   );
 };
 

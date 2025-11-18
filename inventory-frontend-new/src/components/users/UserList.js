@@ -28,7 +28,8 @@ import {
   CircularProgress,
   Snackbar,
   Alert,
-  Divider
+  Divider,
+  Grow
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -281,426 +282,429 @@ const ModernUserList = () => {
   }
 
   return (
-    <Box sx={{ p: 3, backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-        <Typography 
-          variant="h4" 
+    <Grow in={true} timeout={500}>
+      <Box sx={{ p: 3, backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+          <Typography 
+            variant="h4" 
+            sx={{ 
+              fontWeight: 600,
+              backgroundImage: 'linear-gradient(45deg, #3a7bd5, #00d2ff)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              fontFamily: "'Poppins', sans-serif"
+            }}
+          >
+            User Management
+          </Typography>
+          <Box>
+            <Button
+              variant="contained"
+              startIcon={<RefreshIcon />}
+              onClick={fetchUsers}
+              sx={{ 
+                mr: 2,
+                backgroundColor: '#6c757d',
+                '&:hover': { backgroundColor: '#5a6268' },
+                fontWeight: 500,
+                textTransform: 'none',
+                borderRadius: '8px'
+              }}
+            >
+              Refresh
+            </Button>
+            <Button 
+              variant="contained" 
+              startIcon={<AddIcon />}
+              onClick={openCreateDialog}
+              sx={{ 
+                backgroundColor: '#28a745',
+                '&:hover': { backgroundColor: '#218838' },
+                fontWeight: 500,
+                textTransform: 'none',
+                borderRadius: '8px'
+              }}
+            >
+              Add User
+            </Button>
+          </Box>
+        </Box>
+
+        {/* Search Bar */}
+        <Paper elevation={2} sx={{ p: 2, mb: 3, borderRadius: '12px' }}>
+          <TextField
+            fullWidth
+            variant="outlined"
+            placeholder="Search users by name, email or role"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                borderRadius: '8px',
+                '&.Mui-focused fieldset': {
+                  borderColor: '#3a7bd5',
+                },
+              },
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon sx={{ color: '#3a7bd5' }} />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Paper>
+
+        {/* Users Table */}
+        <TableContainer 
+          component={Paper} 
+          elevation={2} 
           sx={{ 
-            fontWeight: 600,
-            backgroundImage: 'linear-gradient(45deg, #e74c3c, #f39c12)',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            fontFamily: "'Poppins', sans-serif"
+            borderRadius: '12px',
+            overflow: 'hidden',
+            mb: 3
           }}
         >
-          User Management
-        </Typography>
-        <Box>
-          <Button
-            variant="contained"
-            startIcon={<RefreshIcon />}
-            onClick={fetchUsers}
-            sx={{ 
-              mr: 2,
-              backgroundColor: '#6c757d',
-              '&:hover': { backgroundColor: '#5a6268' },
-              fontWeight: 500,
-              textTransform: 'none',
-              borderRadius: '8px'
-            }}
-          >
-            Refresh
-          </Button>
-          <Button 
-            variant="contained" 
-            startIcon={<AddIcon />}
-            onClick={openCreateDialog}
-            sx={{ 
-              backgroundColor: '#e74c3c',
-              '&:hover': { backgroundColor: '#c0392b' },
-              fontWeight: 500,
-              textTransform: 'none',
-              borderRadius: '8px'
-            }}
-          >
-            Add User
-          </Button>
-        </Box>
-      </Box>
-
-      {/* Search Bar */}
-      <Paper elevation={2} sx={{ p: 2, mb: 3, borderRadius: '12px' }}>
-        <TextField
-          fullWidth
-          variant="outlined"
-          placeholder="Search users by name, email or role"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          sx={{
-            '& .MuiOutlinedInput-root': {
-              borderRadius: '8px',
-              '&.Mui-focused fieldset': {
-                borderColor: '#e74c3c',
-              },
-            },
-          }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon sx={{ color: '#e74c3c' }} />
-              </InputAdornment>
-            ),
-          }}
-        />
-      </Paper>
-
-      {/* Users Table */}
-      <TableContainer 
-        component={Paper} 
-        elevation={2} 
-        sx={{ 
-          borderRadius: '12px',
-          overflow: 'hidden',
-          mb: 3
-        }}
-      >
-        <Table>
-          <TableHead sx={{ backgroundColor: 'rgba(231, 76, 60, 0.1)' }}>
-            <TableRow>
-              <TableCell sx={{ fontWeight: 600, color: '#e74c3c' }}>User</TableCell>
-              <TableCell sx={{ fontWeight: 600, color: '#e74c3c' }}>Email</TableCell>
-              <TableCell sx={{ fontWeight: 600, color: '#e74c3c' }}>Role</TableCell>
-              <TableCell align="center" sx={{ fontWeight: 600, color: '#e74c3c' }}>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredUsers.length > 0 ? (
-              filteredUsers.map((user) => {
-                const roleStyles = getRoleColor(user.role);
-                return (
-                  <TableRow 
-                    key={user.id}
-                    hover
-                    sx={{
-                      '&:hover': {
-                        backgroundColor: 'rgba(231, 76, 60, 0.02)'
-                      }
-                    }}
-                  >
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Avatar 
-                          sx={{ 
-                            mr: 2,
-                            bgcolor: roleStyles.bg,
-                            color: roleStyles.text,
-                            fontWeight: 'bold'
-                          }}
-                        >
-                          {user.name ? user.name.charAt(0).toUpperCase() : '?'}
-                        </Avatar>
-                        <Typography variant="body1" fontWeight={500}>
-                          {user.name}
-                        </Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <EmailIcon sx={{ color: '#95a5a6', mr: 1, fontSize: '1rem' }} />
-                        <Typography variant="body2">{user.email}</Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Chip 
-                        icon={getRoleIcon(user.role)}
-                        label={user.role} 
-                        size="small"
-                        sx={{ 
-                          backgroundColor: roleStyles.bg,
-                          color: roleStyles.text,
-                          fontWeight: 500,
-                          '& .MuiChip-icon': {
-                            color: roleStyles.iconColor
-                          }
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell align="center">
-                      <Box>
-                        <Tooltip title="Edit">
-                          <IconButton 
-                            size="small" 
-                            color="primary" 
-                            onClick={() => openEditDialog(user)}
+          <Table>
+            <TableHead sx={{ backgroundColor: 'rgba(58, 123, 213, 0.1)' }}>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 600, color: '#3a7bd5' }}>User</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#3a7bd5' }}>Email</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#3a7bd5' }}>Role</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 600, color: '#3a7bd5' }}>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filteredUsers.length > 0 ? (
+                filteredUsers.map((user) => {
+                  const roleStyles = getRoleColor(user.role);
+                  return (
+                    <TableRow 
+                      key={user.id}
+                      hover
+                      sx={{
+                        '&:hover': {
+                          backgroundColor: 'rgba(58, 123, 213, 0.03)'
+                        }
+                      }}
+                    >
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <Avatar 
                             sx={{ 
-                              mx: 0.5,
-                              '&:hover': {
-                                backgroundColor: 'rgba(52, 152, 219, 0.1)'
-                              }
+                              mr: 2,
+                              bgcolor: roleStyles.bg,
+                              color: roleStyles.text,
+                              fontWeight: 'bold'
                             }}
                           >
-                            <EditIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title={user.id === currentUserId ? "Can't delete yourself" : "Delete"}>
-                          <span>
+                            {user.name ? user.name.charAt(0).toUpperCase() : '?'}
+                          </Avatar>
+                          <Typography variant="body1" fontWeight={500}>
+                            {user.name}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <EmailIcon sx={{ color: '#95a5a6', mr: 1, fontSize: '1rem' }} />
+                          <Typography variant="body2">{user.email}</Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Chip 
+                          icon={getRoleIcon(user.role)}
+                          label={user.role} 
+                          size="small"
+                          sx={{ 
+                            backgroundColor: roleStyles.bg,
+                            color: roleStyles.text,
+                            fontWeight: 500,
+                            '& .MuiChip-icon': {
+                              color: roleStyles.iconColor
+                            }
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell align="center">
+                        <Box>
+                          <Tooltip title="Edit">
                             <IconButton 
                               size="small" 
-                              color="error"
-                              onClick={() => openDeleteDialog(user)}
-                              disabled={user.id === currentUserId}
+                              color="primary" 
+                              onClick={() => openEditDialog(user)}
                               sx={{ 
                                 mx: 0.5,
+                                color: '#3a7bd5',
                                 '&:hover': {
-                                  backgroundColor: 'rgba(231, 76, 60, 0.1)'
+                                  backgroundColor: 'rgba(58, 123, 213, 0.1)'
                                 }
                               }}
                             >
-                              <DeleteIcon fontSize="small" />
+                              <EditIcon fontSize="small" />
                             </IconButton>
-                          </span>
-                        </Tooltip>
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            ) : (
-              <TableRow>
-                <TableCell colSpan={4} align="center" sx={{ py: 4 }}>
-                  <Typography variant="h6" color="text.secondary">
-                    No users found
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                    {searchTerm ? 'Try adjusting your search terms' : 'Add your first user using the button above'}
-                  </Typography>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+                          </Tooltip>
+                          <Tooltip title={user.id === currentUserId ? "Can't delete yourself" : "Delete"}>
+                            <span>
+                              <IconButton 
+                                size="small" 
+                                color="error"
+                                onClick={() => openDeleteDialog(user)}
+                                disabled={user.id === currentUserId}
+                                sx={{ 
+                                  mx: 0.5,
+                                  '&:hover': {
+                                    backgroundColor: 'rgba(231, 76, 60, 0.1)'
+                                  }
+                                }}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} align="center" sx={{ py: 4 }}>
+                    <Typography variant="h6" color="text.secondary">
+                      No users found
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                      {searchTerm ? 'Try adjusting your search terms' : 'Add your first user using the button above'}
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
 
-      {/* Create/Edit User Dialog */}
-      <Dialog 
-        open={openDialog} 
-        onClose={() => setOpenDialog(false)}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: '12px',
-            padding: 2
-          }
-        }}
-      >
-        <DialogTitle sx={{ pb: 1 }}>
-          <Typography variant="h5" fontWeight={600} color="#e74c3c">
-            {isEditing ? 'Edit User' : 'Create New User'}
-          </Typography>
-        </DialogTitle>
-        <Divider />
-        <DialogContent sx={{ pt: 3 }}>
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <TextField
-                name="name"
-                label="Full Name"
-                fullWidth
-                value={currentEditUser.name}
-                onChange={handleInputChange}
-                required
-                autoFocus
-                sx={{ 
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: '8px',
-                  }
-                }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <UserIcon sx={{ color: 'rgba(231, 76, 60, 0.6)' }} />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                name="email"
-                label="Email Address"
-                type="email"
-                fullWidth
-                value={currentEditUser.email}
-                onChange={handleInputChange}
-                required
-                sx={{ 
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: '8px',
-                  }
-                }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <EmailIcon sx={{ color: 'rgba(231, 76, 60, 0.6)' }} />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                name="password"
-                label={isEditing ? "Password (leave empty to keep current)" : "Password"}
-                type="password"
-                fullWidth
-                value={currentEditUser.password}
-                onChange={handleInputChange}
-                required={!isEditing}
-                sx={{ 
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: '8px',
-                  }
-                }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PasswordIcon sx={{ color: 'rgba(231, 76, 60, 0.6)' }} />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <FormControl fullWidth sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}>
-                <InputLabel id="role-select-label">Role</InputLabel>
-                <Select
-                  labelId="role-select-label"
-                  name="role"
-                  value={currentEditUser.role}
-                  label="Role"
-                  onChange={handleInputChange}
-                >
-                  <MenuItem value="ADMIN">
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <AdminIcon sx={{ mr: 1, color: '#e74c3c' }} />
-                      Administrator
-                    </Box>
-                  </MenuItem>
-                  <MenuItem value="MANAGER">
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <ManagerIcon sx={{ mr: 1, color: '#3498db' }} />
-                      Manager
-                    </Box>
-                  </MenuItem>
-                  <MenuItem value="EMPLOYEE">
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <UserIcon sx={{ mr: 1, color: '#2ecc71' }} />
-                      Employee
-                    </Box>
-                  </MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-          </Grid>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button 
-            onClick={() => setOpenDialog(false)}
-            sx={{ 
-              color: '#6c757d',
-              fontWeight: 500,
-              borderRadius: '8px'
-            }}
-          >
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleCreateUser}
-            variant="contained"
-            sx={{ 
-              backgroundColor: '#e74c3c',
-              '&:hover': { backgroundColor: '#c0392b' },
-              fontWeight: 500,
-              textTransform: 'none',
-              borderRadius: '8px'
-            }}
-          >
-            {isEditing ? 'Update' : 'Create'} User
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog
-        open={deleteConfirmOpen}
-        onClose={() => setDeleteConfirmOpen(false)}
-        PaperProps={{
-          sx: {
-            borderRadius: '12px',
-            padding: 2
-          }
-        }}
-      >
-        <DialogTitle>
-          <Typography variant="h6" fontWeight={600}>
-            Confirm Delete
-          </Typography>
-        </DialogTitle>
-        <Divider />
-        <DialogContent>
-          <Typography>
-            Are you sure you want to delete the user "{userToDelete?.name}" ({userToDelete?.email})? This action cannot be undone.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button 
-            onClick={() => setDeleteConfirmOpen(false)} 
-            sx={{ 
-              color: '#6c757d',
-              fontWeight: 500,
-              borderRadius: '8px'
-            }}
-          >
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleDeleteUser} 
-            variant="contained" 
-            color="error"
-            sx={{ 
-              fontWeight: 500,
-              textTransform: 'none',
-              borderRadius: '8px'
-            }}
-          >
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Snackbar for notifications */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert 
-          onClose={() => setSnackbar(prev => ({ ...prev, open: false }))} 
-          severity={snackbar.severity}
-          variant="filled"
-          sx={{ 
-            width: '100%',
-            boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-            borderRadius: '8px'
+        {/* Create/Edit User Dialog */}
+        <Dialog 
+          open={openDialog} 
+          onClose={() => setOpenDialog(false)}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: '12px',
+              padding: 2
+            }
           }}
         >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-    </Box>
+          <DialogTitle sx={{ pb: 1 }}>
+            <Typography variant="h5" fontWeight={600} color="#3a7bd5">
+              {isEditing ? 'Edit User' : 'Create New User'}
+            </Typography>
+          </DialogTitle>
+          <Divider />
+          <DialogContent sx={{ pt: 3 }}>
+            <Grid container spacing={3}>
+              <Grid item xs={12}>
+                <TextField
+                  name="name"
+                  label="Full Name"
+                  fullWidth
+                  value={currentEditUser.name}
+                  onChange={handleInputChange}
+                  required
+                  autoFocus
+                  sx={{ 
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: '8px',
+                    }
+                  }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <UserIcon sx={{ color: 'rgba(58, 123, 213, 0.6)' }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  name="email"
+                  label="Email Address"
+                  type="email"
+                  fullWidth
+                  value={currentEditUser.email}
+                  onChange={handleInputChange}
+                  required
+                  sx={{ 
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: '8px',
+                    }
+                  }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <EmailIcon sx={{ color: 'rgba(58, 123, 213, 0.6)' }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  name="password"
+                  label={isEditing ? "Password (leave empty to keep current)" : "Password"}
+                  type="password"
+                  fullWidth
+                  value={currentEditUser.password}
+                  onChange={handleInputChange}
+                  required={!isEditing}
+                  sx={{ 
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: '8px',
+                    }
+                  }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <PasswordIcon sx={{ color: 'rgba(58, 123, 213, 0.6)' }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <FormControl fullWidth sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}>
+                  <InputLabel id="role-select-label">Role</InputLabel>
+                  <Select
+                    labelId="role-select-label"
+                    name="role"
+                    value={currentEditUser.role}
+                    label="Role"
+                    onChange={handleInputChange}
+                  >
+                    <MenuItem value="ADMIN">
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <AdminIcon sx={{ mr: 1, color: '#e74c3c' }} />
+                        Administrator
+                      </Box>
+                    </MenuItem>
+                    <MenuItem value="MANAGER">
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <ManagerIcon sx={{ mr: 1, color: '#3498db' }} />
+                        Manager
+                      </Box>
+                    </MenuItem>
+                    <MenuItem value="EMPLOYEE">
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <UserIcon sx={{ mr: 1, color: '#2ecc71' }} />
+                        Employee
+                      </Box>
+                    </MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button 
+              onClick={() => setOpenDialog(false)}
+              sx={{ 
+                color: '#6c757d',
+                fontWeight: 500,
+                borderRadius: '8px'
+              }}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleCreateUser}
+              variant="contained"
+              sx={{ 
+                backgroundColor: '#3a7bd5',
+                '&:hover': { backgroundColor: '#2a6ac5' },
+                fontWeight: 500,
+                textTransform: 'none',
+                borderRadius: '8px'
+              }}
+            >
+              {isEditing ? 'Update' : 'Create'} User
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog
+          open={deleteConfirmOpen}
+          onClose={() => setDeleteConfirmOpen(false)}
+          PaperProps={{
+            sx: {
+              borderRadius: '12px',
+              padding: 2
+            }
+          }}
+        >
+          <DialogTitle>
+            <Typography variant="h6" fontWeight={600}>
+              Confirm Delete
+            </Typography>
+          </DialogTitle>
+          <Divider />
+          <DialogContent>
+            <Typography>
+              Are you sure you want to delete the user "{userToDelete?.name}" ({userToDelete?.email})? This action cannot be undone.
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button 
+              onClick={() => setDeleteConfirmOpen(false)} 
+              sx={{ 
+                color: '#6c757d',
+                fontWeight: 500,
+                borderRadius: '8px'
+              }}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleDeleteUser} 
+              variant="contained" 
+              color="error"
+              sx={{ 
+                fontWeight: 500,
+                textTransform: 'none',
+                borderRadius: '8px'
+              }}
+            >
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Snackbar for notifications */}
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={6000}
+          onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        >
+          <Alert 
+            onClose={() => setSnackbar(prev => ({ ...prev, open: false }))} 
+            severity={snackbar.severity}
+            variant="filled"
+            sx={{ 
+              width: '100%',
+              boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+              borderRadius: '8px'
+            }}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
+      </Box>
+    </Grow>
   );
 };
 
