@@ -14,8 +14,7 @@ import {
   InputAdornment,
   IconButton
 } from '@mui/material';
-import { 
-  Inventory as InventoryIcon,
+import {
   Email as EmailIcon,
   Lock as LockIcon,
   Visibility as VisibilityIcon,
@@ -66,19 +65,32 @@ const Login = () => {
       await login(email, password);
       navigate('/dashboard');
     } catch (error) {
-      const resMessage =
-        (error.response &&
-          error.response.data &&
-          error.response.data.message) ||
-        error.message ||
-        error.toString();
+      let errorMessage = 'Invalid email or password';
 
-      setLoading(false);
+      // Check for specific error responses
+      if (error.response) {
+        if (error.response.status === 401) {
+          errorMessage = 'Invalid email or password. Please try again.';
+        } else if (error.response.status === 404) {
+          errorMessage = 'Account not found. Please check your email.';
+        } else if (error.response.status === 403) {
+          errorMessage = 'Account is locked. Please contact support.';
+        } else if (error.response.status === 500) {
+          errorMessage = 'Server error. Please try again later.';
+        } else if (error.response.data?.message) {
+          errorMessage = error.response.data.message;
+        }
+      } else if (error.request) {
+        errorMessage = 'Network error. Please check your connection.';
+      }
+
       setSnackbar({
         open: true,
-        message: 'Invalid email or password',
+        message: errorMessage,
         severity: 'error'
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -122,27 +134,25 @@ const Login = () => {
                 alignItems: 'center'
               }}
             >
-              <Avatar 
-                sx={{ 
-                  bgcolor: 'rgba(255, 255, 255, 0.2)', 
-                  color: 'white',
+              <Avatar
+                src="/favicon.png"
+                alt="Inventra"
+                sx={{
                   width: 70,
                   height: 70,
                   mb: 2
                 }}
-              >
-                <InventoryIcon sx={{ fontSize: 40 }} />
-              </Avatar>
-              <Typography 
-                component="h1" 
-                variant="h4" 
-                sx={{ 
+              />
+              <Typography
+                component="h1"
+                variant="h4"
+                sx={{
                   color: 'white',
                   fontWeight: 'bold',
                   fontFamily: "'Montserrat', sans-serif"
                 }}
               >
-                Inventory System
+                Inventra
               </Typography>
               <Typography 
                 variant="body2" 

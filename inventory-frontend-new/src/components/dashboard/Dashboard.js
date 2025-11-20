@@ -33,7 +33,7 @@ import {
   LocationOn as LocationIcon,
   Menu as MenuIcon
 } from '@mui/icons-material';
-import { PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid, Brush } from 'recharts';
 import axios from 'axios';
 import authHeader from '../../services/AuthHeader';
 
@@ -69,14 +69,15 @@ const ResponsiveDashboard = () => {
   useEffect(() => {
     fetchData();
     fetchHistoryData();
-    
+
     const refreshInterval = setInterval(() => {
       fetchData();
       fetchHistoryData();
     }, 30000);
-    
+
     return () => clearInterval(refreshInterval);
   }, []);
+
 
   const fetchData = async () => {
     try {
@@ -104,35 +105,34 @@ const ResponsiveDashboard = () => {
       
       const allInventory = Array.isArray(inventoryRes.data) ? inventoryRes.data : [];
       const totalQuantity = allInventory.reduce((sum, item) => sum + (item.quantity || 0), 0);
-      
+
+      // Fetch previous stats from backend
       let previousStats = null;
-      let hasPrevStats = false;
-      
       try {
         const previousStatsRes = await axios.get('http://localhost:8080/api/stats/previous', { headers: authHeader() });
-        if (previousStatsRes.data) {
+        if (previousStatsRes.status === 200 && previousStatsRes.data) {
           previousStats = previousStatsRes.data;
-          hasPrevStats = true;
+          setHasPreviousStats(true);
+        } else {
+          setHasPreviousStats(false);
         }
       } catch (err) {
-        console.log('Previous stats not available');
-        hasPrevStats = false;
+        console.log('Previous stats not available:', err.response?.status === 204 ? 'No data yet' : err.message);
+        setHasPreviousStats(false);
       }
-      
-      setHasPreviousStats(hasPrevStats);
-      
+
       setStats({
         productCount: Array.isArray(productsRes.data) ? productsRes.data.length : 0,
-        previousProductCount: hasPrevStats ? previousStats.productCount : null,
+        previousProductCount: previousStats?.totalProducts ?? null,
         categoryCount: Array.isArray(categoriesRes.data) ? categoriesRes.data.length : 0,
-        previousCategoryCount: hasPrevStats ? previousStats.categoryCount : null,
+        previousCategoryCount: previousStats?.totalCategories ?? null,
         supplierCount: Array.isArray(suppliersRes.data) ? suppliersRes.data.length : 0,
-        previousSupplierCount: hasPrevStats ? previousStats.supplierCount : null,
+        previousSupplierCount: previousStats?.totalSuppliers ?? null,
         lowStockCount: lowStockItems.length,
-        previousLowStockCount: hasPrevStats ? previousStats.lowStockCount : null,
+        previousLowStockCount: previousStats?.lowStockItems ?? null,
         lowStockItems: lowStockItems,
         totalQuantity: totalQuantity,
-        previousTotalQuantity: hasPrevStats ? previousStats.totalQuantity : null
+        previousTotalQuantity: previousStats?.totalInventoryQuantity ?? null
       });
 
       const products = Array.isArray(productsRes.data) ? productsRes.data : [];
@@ -186,24 +186,30 @@ const ResponsiveDashboard = () => {
       const response = await axios.get('http://localhost:8080/api/inventory-history/recent', {
         headers: authHeader()
       });
-      
-      if (Array.isArray(response.data)) {
+
+      console.log('Inventory history response:', response.data);
+      console.log('Is array:', Array.isArray(response.data));
+      console.log('Length:', response.data?.length);
+
+      if (Array.isArray(response.data) && response.data.length > 0) {
         const formattedHistory = response.data.map(item => ({
           timestamp: new Date(item.timestamp),
           label: formatDateLabel(item.timestamp),
-          totalQuantity: item.totalQuantity
+          totalQuantity: item.totalQuantity,
+          change: item.quantityChange || 0
         }));
-        
+
         formattedHistory.sort((a, b) => a.timestamp - b.timestamp);
-        
-        const processedData = isXs || isSm 
-          ? formattedHistory
-          : limitDataPoints(formattedHistory);
-        
-        setInventoryHistory(processedData);
+
+        console.log('Processed history data:', formattedHistory);
+        setInventoryHistory(formattedHistory);
+      } else {
+        console.log('No inventory history data received');
+        setInventoryHistory([]);
       }
     } catch (error) {
       console.error('Error fetching inventory history:', error);
+      console.error('Error details:', error.response?.data || error.message);
       setInventoryHistory([]);
     }
   };
@@ -469,10 +475,10 @@ const ResponsiveDashboard = () => {
                         ) : (
                           <ArrowDownwardIcon fontSize="small" sx={{ mr: 0.5, fontSize: { xs: '0.8rem', md: '1rem' } }} />
                         )}
-                        {productGrowth.percentage}% {productGrowth.positive ? 'increase' : 'decrease'} this month
+                        {productGrowth.percentage}% {productGrowth.positive ? 'increase' : 'decrease'} from last snapshot
                       </>
                     ) : (
-                      'No historical data available'
+                      `${stats.productCount} total products in inventory`
                     )}
                   </Typography>
                 </Box>
@@ -557,12 +563,12 @@ const ResponsiveDashboard = () => {
                         ) : (
                           <ArrowDownwardIcon fontSize="small" sx={{ mr: 0.5, fontSize: { xs: '0.8rem', md: '1rem' } }} />
                         )}
-                        {categoryGrowth.percentage > 0 
-                          ? `${categoryGrowth.percentage}% ${categoryGrowth.positive ? 'growth' : 'reduction'} in categories` 
-                          : 'No change in categories'}
+                        {categoryGrowth.percentage > 0
+                          ? `${categoryGrowth.percentage}% ${categoryGrowth.positive ? 'growth' : 'reduction'} from last snapshot`
+                          : 'No change from last snapshot'}
                       </>
                     ) : (
-                      'No historical data available'
+                      `${stats.categoryCount} categories organized`
                     )}
                   </Typography>
                 </Box>
@@ -648,12 +654,12 @@ const ResponsiveDashboard = () => {
                         ) : (
                           <ArrowDownwardIcon fontSize="small" sx={{ mr: 0.5, fontSize: { xs: '0.8rem', md: '1rem' } }} />
                         )}
-                        {supplierGrowth.percentage > 0 
-                          ? `${supplierGrowth.percentage}% ${supplierGrowth.positive ? 'increase' : 'decrease'} in suppliers` 
-                          : 'No change in suppliers'}
+                        {supplierGrowth.percentage > 0
+                          ? `${supplierGrowth.percentage}% ${supplierGrowth.positive ? 'increase' : 'decrease'} from last snapshot`
+                          : 'No change from last snapshot'}
                       </>
                     ) : (
-                      'No historical data available'
+                      `${stats.supplierCount} active suppliers`
                     )}
                   </Typography>
                 </Box>
@@ -733,19 +739,21 @@ const ResponsiveDashboard = () => {
                     }}
                   >
                     {lowStockGrowth.hasData ? (
-                      !lowStockGrowth.positive ? (
+                      lowStockGrowth.positive ? (
                         <>
                           <ArrowDownwardIcon fontSize="small" sx={{ mr: 0.5, color: '#27ae60', fontSize: { xs: '0.8rem', md: '1rem' } }} />
-                          {lowStockGrowth.percentage}% decrease in low stock
+                          {lowStockGrowth.percentage}% decrease from last snapshot
                         </>
                       ) : (
                         <>
                           <ArrowUpwardIcon fontSize="small" sx={{ mr: 0.5, color: '#e74c3c', fontSize: { xs: '0.8rem', md: '1rem' } }} />
-                          {lowStockGrowth.percentage}% increase in low stock
+                          {lowStockGrowth.percentage}% increase from last snapshot
                         </>
                       )
                     ) : (
-                      'No historical data available'
+                      stats.lowStockCount === 0
+                        ? 'All items above reorder level'
+                        : `${stats.lowStockCount} items need attention`
                     )}
                   </Typography>
                 </Box>
@@ -777,71 +785,99 @@ const ResponsiveDashboard = () => {
                   <AssessmentIcon sx={{ mr: 1, fontSize: { xs: '1.2rem', md: '1.5rem' } }} /> Inventory History
                 </Typography>
                 <Divider sx={{ mb: 3 }} />
-                <Box sx={{ height: { xs: 260, sm: 270, md: 320 } }}>
+                <Box sx={{ height: { xs: 320, sm: 350, md: 400 } }}>
                   {inventoryHistory.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
-                      <LineChart
+                      <AreaChart
                         data={inventoryHistory}
-                        margin={{ 
-                          top: 10, 
-                          right: isXs ? 10 : (isSm ? 20 : 40), 
-                          left: isXs ? 0 : (isSm ? 10 : 20), 
-                          bottom: isXs ? 40 : (isSm ? 30 : 25) 
+                        margin={{
+                          top: 10,
+                          right: isXs ? 10 : (isSm ? 20 : 30),
+                          left: isXs ? -10 : (isSm ? 0 : 10),
+                          bottom: 5
                         }}
                       >
-                        <CartesianGrid 
-                          strokeDasharray="3 3" 
-                          stroke="#f0f0f0" 
+                        <defs>
+                          <linearGradient id="colorQuantity" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#3498db" stopOpacity={0.3}/>
+                            <stop offset="95%" stopColor="#3498db" stopOpacity={0.05}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          stroke="#e8e8e8"
                           horizontal={true}
-                          vertical={!isXs}
+                          vertical={false}
                         />
-                        <XAxis 
-                          dataKey="label" 
-                          tick={{ 
-                            fill: '#666', 
-                            fontSize: isXs ? 7 : (isSm ? 9 : 11)
+                        <XAxis
+                          dataKey="label"
+                          tick={{
+                            fill: '#888',
+                            fontSize: isXs ? 8 : (isSm ? 9 : 10)
                           }}
-                          interval={isXs ? "preserveStartEnd" : (isSm ? "preserveStartEnd" : "preserveEnd")}
-                          angle={isXs ? -45 : (isSm ? -30 : -15)}
-                          textAnchor="end"
-                          height={isXs ? 70 : (isSm ? 60 : 50)}
-                          tickMargin={isXs ? 15 : (isSm ? 12 : 10)}
-                          padding={{ left: 10, right: 10 }}
+                          interval="preserveStartEnd"
                           tickFormatter={(value) => {
-                            if (isXs && value.length > 10) return value.substring(0, 10) + '...';
-                            return value;
+                            // Show condensed format: "Jan 15" or "15 2PM"
+                            const parts = value.split(' ');
+                            if (parts.length >= 3) {
+                              // Format: "Jan 15 2:30 PM" -> "Jan 15"
+                              return `${parts[0]} ${parts[1]}`;
+                            }
+                            return value.substring(0, 8);
                           }}
+                          height={35}
+                          tickMargin={8}
+                          axisLine={{ stroke: '#e0e0e0' }}
+                          tickLine={{ stroke: '#e0e0e0' }}
                         />
-                        <YAxis 
-                          tick={{ 
-                            fill: '#666', 
-                            fontSize: isXs ? 10 : 12 
+                        <YAxis
+                          tick={{
+                            fill: '#888',
+                            fontSize: isXs ? 9 : 10
                           }}
-                          width={isXs ? 30 : 40}
-                          tickCount={5}
-                          domain={['dataMin - 10', 'dataMax + 10']}
+                          width={isXs ? 35 : 45}
+                          tickCount={6}
+                          domain={['dataMin - 5', 'dataMax + 5']}
+                          axisLine={{ stroke: '#e0e0e0' }}
+                          tickLine={{ stroke: '#e0e0e0' }}
                         />
-                        <Tooltip 
-                          contentStyle={{ 
-                            borderRadius: '8px',
-                            boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                        <Tooltip
+                          contentStyle={{
+                            borderRadius: '10px',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                             border: 'none',
-                            backgroundColor: 'rgba(255,255,255,0.95)',
-                            fontSize: isXs ? '0.7rem' : '0.75rem'
+                            backgroundColor: 'rgba(255,255,255,0.98)',
+                            fontSize: '0.8rem',
+                            padding: '12px 16px'
                           }}
-                          formatter={(value) => [`${value} items`, 'Total Quantity']}
+                          formatter={(value, name) => {
+                            if (name === 'Total Items') {
+                              return [`${value} items`, 'Total Quantity'];
+                            }
+                            return [value, name];
+                          }}
+                          labelFormatter={(label) => label}
+                          labelStyle={{ fontWeight: 600, marginBottom: '4px', color: '#3498db' }}
                         />
-                        <Legend wrapperStyle={{ fontSize: isXs ? '0.7rem' : '0.75rem' }} />
-                        <Line 
-                          type="monotone" 
-                          dataKey="totalQuantity" 
-                          stroke="#3498db" 
-                          strokeWidth={2} 
-                          dot={{ fill: '#3498db', r: isXs ? 4 : 6 }} 
-                          activeDot={{ r: isXs ? 6 : 8 }}
+                        <Area
+                          type="monotone"
+                          dataKey="totalQuantity"
+                          stroke="#3498db"
+                          strokeWidth={2.5}
+                          fill="url(#colorQuantity)"
+                          dot={{ fill: '#3498db', r: isXs ? 3 : 4, strokeWidth: 2, stroke: '#fff' }}
+                          activeDot={{ r: isXs ? 5 : 7, stroke: '#3498db', strokeWidth: 2, fill: '#fff' }}
                           name="Total Items"
                         />
-                      </LineChart>
+                        <Brush
+                          dataKey="label"
+                          height={30}
+                          stroke="#3498db"
+                          fill="#f5f5f5"
+                          tickFormatter={(value) => ''}
+                          startIndex={Math.max(0, inventoryHistory.length - 20)}
+                        />
+                      </AreaChart>
                     </ResponsiveContainer>
                   ) : (
                     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
@@ -912,14 +948,11 @@ const ResponsiveDashboard = () => {
                             mr: 1
                           }} 
                         />
-                        <Typography 
-                          variant="caption" 
+                        <Typography
+                          variant="caption"
                           fontSize={{ xs: '0.65rem', md: '0.75rem' }}
                           sx={{
-                            maxWidth: '75px',
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis'
+                            whiteSpace: 'nowrap'
                           }}
                         >
                           {entry.name} ({stats.productCount > 0 ? Math.round(entry.value / stats.productCount * 100) : 0}%)
@@ -976,10 +1009,11 @@ const ResponsiveDashboard = () => {
               backgroundImage: 'linear-gradient(to right, #fff, rgba(231, 76, 60, 0.05))'
             }}
           >
-            <Typography 
-              variant="h6" 
-              sx={{ 
-                mb: 2, 
+            <Typography
+              variant="h6"
+              sx={{
+                mb: 2,
+                pt: 1,
                 fontWeight: 600,
                 display: 'flex',
                 alignItems: 'center',
@@ -1046,23 +1080,25 @@ const ResponsiveDashboard = () => {
                             </Typography>
                           }
                           secondary={
-                            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, mt: 0.5, gap: { xs: 0.5, sm: 2 } }}>
+                            <Box component="span" sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, mt: 0.5, gap: { xs: 0.5, sm: 2 } }}>
                               <Typography
                                 variant="body2"
+                                component="span"
                                 color="text.secondary"
                                 fontSize={{ xs: '0.7rem', md: '0.75rem' }}
                                 sx={{ whiteSpace: 'nowrap' }}
                               >
                                 Reorder Level: {item.reorderLevel}
                               </Typography>
-                              
-                              <Box sx={{ display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
+
+                              <Box component="span" sx={{ display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
                                 <LocationIcon sx={{ color: 'text.secondary', fontSize: { xs: '0.7rem', md: '0.9rem' }, mr: 0.5, flexShrink: 0 }} />
                                 <Typography
                                   variant="body2"
+                                  component="span"
                                   color="text.secondary"
                                   fontSize={{ xs: '0.7rem', md: '0.75rem' }}
-                                  sx={{ 
+                                  sx={{
                                     whiteSpace: 'nowrap',
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
@@ -1082,9 +1118,9 @@ const ResponsiveDashboard = () => {
                         ml: { xs: 0, sm: 'auto' }, 
                         mt: { xs: 1, sm: 0 } 
                       }}>
-                        <Typography 
-                          variant="body2" 
-                          sx={{ 
+                        <Typography
+                          variant="body2"
+                          sx={{
                             color: item.quantity === 0 ? '#c0392b' : '#e67e22',
                             fontWeight: 'bold',
                             bgcolor: item.quantity === 0 ? 'rgba(231, 76, 60, 0.1)' : 'rgba(230, 126, 34, 0.1)',
@@ -1093,7 +1129,8 @@ const ResponsiveDashboard = () => {
                             borderRadius: '16px',
                             fontSize: { xs: '0.7rem', md: '0.75rem' },
                             display: 'inline-block',
-                            lineHeight: 1.5
+                            lineHeight: 1.5,
+                            whiteSpace: 'nowrap'
                           }}
                         >
                           {item.quantity} {item.quantity === 1 ? "item" : "items"} in stock
@@ -1188,21 +1225,21 @@ const ResponsiveDashboard = () => {
                               ) : (
                                 <ArrowDownwardIcon fontSize="small" sx={{ mr: 0.5, color: 'error.main', fontSize: { xs: '0.8rem', md: '1rem' } }} />
                               )}
-                              <Typography 
-                                variant="caption" 
+                              <Typography
+                                variant="caption"
                                 color={totalQuantityGrowth.positive ? 'success.main' : 'error.main'}
                                 fontSize={{ xs: '0.7rem', md: '0.75rem' }}
                               >
-                                {totalQuantityGrowth.percentage}% from last period
+                                {totalQuantityGrowth.percentage}% {totalQuantityGrowth.positive ? 'increase' : 'decrease'} from last snapshot
                               </Typography>
                             </>
                           ) : (
-                            <Typography 
-                              variant="caption" 
+                            <Typography
+                              variant="caption"
                               color="text.secondary"
                               fontSize={{ xs: '0.7rem', md: '0.75rem' }}
                             >
-                              No historical data available
+                              Tracking inventory changes
                             </Typography>
                           )}
                         </Box>

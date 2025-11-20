@@ -19,7 +19,6 @@ import {
   Divider
 } from '@mui/material';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import InventoryIcon from '@mui/icons-material/Inventory';
 import MenuIcon from '@mui/icons-material/Menu';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import CategoryIcon from '@mui/icons-material/Category';
@@ -101,26 +100,25 @@ const Navbar = () => {
           alignItems: 'center',
         }}
       >
-        <Avatar 
-          sx={{ 
-            width: 70, 
-            height: 70, 
-            mb: 2, 
-            bgcolor: 'rgba(255, 255, 255, 0.2)',
+        <Avatar
+          src="/favicon.png"
+          alt="Inventra"
+          sx={{
+            width: 70,
+            height: 70,
+            mb: 2,
             boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
           }}
-        >
-          <InventoryIcon sx={{ fontSize: 40 }} />
-        </Avatar>
-        <Typography 
-          variant="h5" 
-          sx={{ 
-            color: 'white', 
+        />
+        <Typography
+          variant="h5"
+          sx={{
+            color: 'white',
             fontWeight: 'bold',
             fontFamily: "'Montserrat', sans-serif"
           }}
         >
-          Inventory System
+          Inventra
         </Typography>
         {currentUser && (
           <Typography 
@@ -256,20 +254,18 @@ const Navbar = () => {
                   color: 'inherit'
                 }}
               >
-                <Avatar 
-                  sx={{ 
-                    bgcolor: 'rgba(52, 152, 219, 0.1)', 
-                    color: '#3498db',
+                <Avatar
+                  src="/favicon.png"
+                  alt="Inventra"
+                  sx={{
                     width: 40,
                     height: 40,
                     mr: 1.5
                   }}
-                >
-                  <InventoryIcon />
-                </Avatar>
-                <Typography 
-                  variant="h6" 
-                  sx={{ 
+                />
+                <Typography
+                  variant="h6"
+                  sx={{
                     fontWeight: 600,
                     backgroundImage: 'linear-gradient(45deg, #3a7bd5, #00d2ff)',
                     backgroundClip: 'text',
@@ -279,7 +275,7 @@ const Navbar = () => {
                     display: { xs: 'none', sm: 'block' }
                   }}
                 >
-                  Inventory System
+                  Inventra
                 </Typography>
                 {currentUser?.companyName && (
                 <Typography 

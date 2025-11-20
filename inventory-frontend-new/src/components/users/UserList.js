@@ -78,6 +78,71 @@ const ModernUserList = () => {
     severity: 'success'
   });
   const [searchTerm, setSearchTerm] = useState('');
+  const [formErrors, setFormErrors] = useState({
+    name: '',
+    email: '',
+    password: ''
+  });
+  const [touched, setTouched] = useState({
+    name: false,
+    email: false,
+    password: false
+  });
+
+  // Validation functions
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePassword = (password) => {
+    // At least 8 characters, one uppercase, one lowercase, one number
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    return passwordRegex.test(password);
+  };
+
+  const getFieldError = (fieldName, value, isEditMode) => {
+    switch (fieldName) {
+      case 'name':
+        if (!value || !value.trim()) return 'Name is required';
+        if (value.trim().length < 2) return 'Name must be at least 2 characters';
+        if (value.trim().length > 50) return 'Name must be less than 50 characters';
+        return '';
+      case 'email':
+        if (!value || !value.trim()) return 'Email is required';
+        if (!validateEmail(value)) return 'Please enter a valid email address';
+        return '';
+      case 'password':
+        if (!isEditMode && (!value || !value.trim())) return 'Password is required';
+        if (value && value.length > 0 && value.length < 8) return 'Password must be at least 8 characters';
+        if (value && value.length > 0 && !validatePassword(value)) {
+          return 'Password must contain uppercase, lowercase, and number';
+        }
+        return '';
+      default:
+        return '';
+    }
+  };
+
+  const validateForm = () => {
+    const nameError = getFieldError('name', currentEditUser.name, isEditing);
+    const emailError = getFieldError('email', currentEditUser.email, isEditing);
+    const passwordError = getFieldError('password', currentEditUser.password, isEditing);
+
+    setFormErrors({
+      name: nameError,
+      email: emailError,
+      password: passwordError
+    });
+
+    return !nameError && !emailError && !passwordError;
+  };
+
+  const handleBlur = (fieldName) => {
+    setTouched(prev => ({ ...prev, [fieldName]: true }));
+    const error = getFieldError(fieldName, currentEditUser[fieldName], isEditing);
+    setFormErrors(prev => ({ ...prev, [fieldName]: error }));
+  };
 
   useEffect(() => {
     fetchUsers();
@@ -126,11 +191,14 @@ const ModernUserList = () => {
 
   const handleCreateUser = async () => {
     try {
-      // Validation
-      if (!currentEditUser.name || !currentEditUser.email || (!currentEditUser.id && !currentEditUser.password)) {
+      // Mark all fields as touched
+      setTouched({ name: true, email: true, password: true });
+
+      // Validate form
+      if (!validateForm()) {
         setSnackbar({
           open: true,
-          message: 'Please fill all required fields',
+          message: 'Please fix the errors in the form',
           severity: 'error'
         });
         return;
@@ -207,6 +275,8 @@ const ModernUserList = () => {
       password: '', // Don't prefill password
       role: user.role
     });
+    setFormErrors({ name: '', email: '', password: '' });
+    setTouched({ name: false, email: false, password: false });
     setIsEditing(true);
     setOpenDialog(true);
   };
@@ -219,6 +289,8 @@ const ModernUserList = () => {
       password: '',
       role: 'EMPLOYEE'
     });
+    setFormErrors({ name: '', email: '', password: '' });
+    setTouched({ name: false, email: false, password: false });
     setIsEditing(false);
     setOpenDialog(true);
   };
@@ -513,9 +585,12 @@ const ModernUserList = () => {
                   fullWidth
                   value={currentEditUser.name}
                   onChange={handleInputChange}
+                  onBlur={() => handleBlur('name')}
+                  error={touched.name && !!formErrors.name}
+                  helperText={touched.name && formErrors.name}
                   required
                   autoFocus
-                  sx={{ 
+                  sx={{
                     '& .MuiOutlinedInput-root': {
                       borderRadius: '8px',
                     }
@@ -523,7 +598,7 @@ const ModernUserList = () => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <UserIcon sx={{ color: 'rgba(58, 123, 213, 0.6)' }} />
+                        <UserIcon sx={{ color: touched.name && formErrors.name ? '#d32f2f' : 'rgba(58, 123, 213, 0.6)' }} />
                       </InputAdornment>
                     ),
                   }}
@@ -537,8 +612,11 @@ const ModernUserList = () => {
                   fullWidth
                   value={currentEditUser.email}
                   onChange={handleInputChange}
+                  onBlur={() => handleBlur('email')}
+                  error={touched.email && !!formErrors.email}
+                  helperText={touched.email && formErrors.email}
                   required
-                  sx={{ 
+                  sx={{
                     '& .MuiOutlinedInput-root': {
                       borderRadius: '8px',
                     }
@@ -546,7 +624,7 @@ const ModernUserList = () => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <EmailIcon sx={{ color: 'rgba(58, 123, 213, 0.6)' }} />
+                        <EmailIcon sx={{ color: touched.email && formErrors.email ? '#d32f2f' : 'rgba(58, 123, 213, 0.6)' }} />
                       </InputAdornment>
                     ),
                   }}
@@ -560,8 +638,11 @@ const ModernUserList = () => {
                   fullWidth
                   value={currentEditUser.password}
                   onChange={handleInputChange}
+                  onBlur={() => handleBlur('password')}
+                  error={touched.password && !!formErrors.password}
+                  helperText={(touched.password && formErrors.password) || (!isEditing && 'Min 8 chars with uppercase, lowercase, and number')}
                   required={!isEditing}
-                  sx={{ 
+                  sx={{
                     '& .MuiOutlinedInput-root': {
                       borderRadius: '8px',
                     }
@@ -569,7 +650,7 @@ const ModernUserList = () => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <PasswordIcon sx={{ color: 'rgba(58, 123, 213, 0.6)' }} />
+                        <PasswordIcon sx={{ color: touched.password && formErrors.password ? '#d32f2f' : 'rgba(58, 123, 213, 0.6)' }} />
                       </InputAdornment>
                     ),
                   }}

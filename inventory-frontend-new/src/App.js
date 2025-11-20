@@ -21,6 +21,7 @@ import { AuthProvider } from './context/AuthContext';
 import ChatList from './components/chat/ChatList';
 import ChatDetail from './components/chat/ChatDetail';
 import CompanyRegister from './components/auth/CompanyRegister';
+import AIAssistant from './components/ai/AIAssistant';
 import './App.css';
 
 function App() {
@@ -291,6 +292,9 @@ function App() {
             <Route path="/unauthorized" element={<Unauthorized />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
+
+          {/* AI Assistant - Floating button and side panel */}
+          <AIAssistant />
         </div>
       </AuthProvider>
     </Router>

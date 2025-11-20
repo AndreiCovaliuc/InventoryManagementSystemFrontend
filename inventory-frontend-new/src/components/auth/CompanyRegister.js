@@ -89,9 +89,8 @@ const CompanyRegister = () => {
   };
 
   const validateCUI = (cui) => {
-    // Basic CUI validation - adjust based on your requirements
-    // Romanian CUI is typically 2-10 digits, optionally prefixed with 'RO'
-    const cuiRegex = /^(RO)?[0-9]{2,10}$/i;
+    // CUI must be in format RO followed by exactly 8 digits (e.g., RO12345678)
+    const cuiRegex = /^RO[0-9]{8}$/;
     return cuiRegex.test(cui.trim());
   };
 
@@ -107,7 +106,7 @@ const CompanyRegister = () => {
       
       case 'cui':
         if (!formData.cui.trim()) return 'CUI is required';
-        if (!validateCUI(formData.cui)) return 'Invalid CUI format (e.g., RO12345678 or 12345678)';
+        if (!validateCUI(formData.cui)) return 'CUI must be in format RO followed by 8 digits (e.g., RO12345678)';
         return '';
       
       case 'adminName':
@@ -285,7 +284,8 @@ const CompanyRegister = () => {
                     onChange={handleChange}
                     onBlur={() => handleBlur('cui')}
                     error={!!getFieldError('cui')}
-                    helperText={getFieldError('cui') || 'Format: RO12345678 or 12345678'}
+                    helperText={getFieldError('cui') || 'Format: RO12345678'}
+                    placeholder="RO12345678"
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
@@ -447,7 +447,13 @@ const CompanyRegister = () => {
                             formData.password === confirmPassword ? (
                               <CheckCircleIcon sx={{ color: 'success.main', mr: 1 }} />
                             ) : (
-                              <CancelIcon sx={{ color: 'error.main', mr: 1 }} />
+                              <IconButton
+                                onClick={() => setConfirmPassword('')}
+                                size="small"
+                                sx={{ mr: 0.5 }}
+                              >
+                                <CancelIcon sx={{ color: 'error.main' }} />
+                              </IconButton>
                             )
                           )}
                           <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} edge="end">
