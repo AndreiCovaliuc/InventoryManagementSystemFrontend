@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useRef } from 'react';
+import React, { useState, useEffect, useContext, useRef, useCallback } from 'react';
 import {
   Box,
   Typography,
@@ -37,6 +37,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { usePresence } from '../../context/PresenceContext';
 import ChatService from '../../services/ChatService';
+import websocketService from '../../services/WebSocketService';
 import NewChatDialog from './NewChatDialog';
 import { keyframes } from '@mui/system';
 
@@ -65,17 +66,74 @@ const ChatList = () => {
   const [messageInput, setMessageInput] = useState('');
   const [loadingMessages, setLoadingMessages] = useState(false);
   const messagesEndRef = useRef(null);
+  const chatSubRef = useRef(null);
+  const unreadSubRef = useRef(null);
+
+  // Append incoming WS message to the inline panel, deduplicated by id
+  const handleIncomingMessage = useCallback((msg) => {
+    setMessages(prev => {
+      if (prev.some(m => m.id === msg.id)) return prev;
+      return [...prev, msg];
+    });
+    // Refresh chat list so the last-message preview updates
+    fetchChats(false);
+  }, []);
 
   useEffect(() => {
     fetchChats();
+    // Still poll chat list (metadata / last message preview) — no WS topic for that
     const interval = setInterval(() => {
       fetchChats(false);
-      if (selectedChatId) {
-        fetchMessages(selectedChatId, false);
-      }
-    }, 10000);
+    }, 30000);
     return () => clearInterval(interval);
-  }, [selectedChatId]);
+  }, []);
+
+  // Subscribe/unsubscribe from the selected chat's message topic
+  useEffect(() => {
+    if (chatSubRef.current) {
+      chatSubRef.current.unsubscribe();
+      chatSubRef.current = null;
+    }
+    if (!selectedChatId) return;
+
+    const subTimeout = setTimeout(() => {
+      chatSubRef.current = websocketService.subscribe(
+        `/topic/chat/${selectedChatId}`,
+        handleIncomingMessage
+      );
+    }, 200);
+
+    return () => {
+      clearTimeout(subTimeout);
+      if (chatSubRef.current) {
+        chatSubRef.current.unsubscribe();
+        chatSubRef.current = null;
+      }
+    };
+  }, [selectedChatId, handleIncomingMessage]);
+
+  // Subscribe to unread count updates to keep hasUnread badges in sync
+  useEffect(() => {
+    if (!currentUser?.id) return;
+    const subTimeout = setTimeout(() => {
+      unreadSubRef.current = websocketService.subscribe(
+        `/topic/chat/unread/${currentUser.id}`,
+        () => {
+          // Re-fetch for authoritative hasUnread state — fires for both
+          // new incoming messages AND mark-as-read (which decrements the count)
+          fetchChats(false);
+        }
+      );
+    }, 200);
+
+    return () => {
+      clearTimeout(subTimeout);
+      if (unreadSubRef.current) {
+        unreadSubRef.current.unsubscribe();
+        unreadSubRef.current = null;
+      }
+    };
+  }, [currentUser?.id]);
 
   useEffect(() => {
     if (chats.length > 0) {
@@ -373,6 +431,7 @@ const ChatList = () => {
                   overflowX: 'hidden',
                   flexGrow: 1,
                   pb: 1,
+                  scrollbarGutter: 'stable',
                   '&::-webkit-scrollbar': {
                     width: '6px',
                   },
@@ -469,7 +528,7 @@ const ChatList = () => {
                     </Box>
                   </Fade>
                 ) : (
-                  <List sx={{ width: '100%', p: 1.5, pr: 2 }}>
+                  <List sx={{ width: '100%', p: 1.5 }}>
                     {filteredChats.map((chat, index) => (
                       <Fade 
                         in={true} 

@@ -102,6 +102,21 @@ class WebSocketService {
     }
   }
 
+  // Subscribe to any topic. Returns the STOMP subscription object (call .unsubscribe() to clean up).
+  // Returns null if the WebSocket is not yet connected.
+  subscribe(topic, callback) {
+    if (!this.client || !this.client.connected) {
+      return null;
+    }
+    return this.client.subscribe(topic, (message) => {
+      try {
+        callback(JSON.parse(message.body));
+      } catch (e) {
+        console.error('WebSocket: Error parsing message on topic ' + topic, e);
+      }
+    });
+  }
+
   isConnected() {
     return this.client && this.client.connected;
   }

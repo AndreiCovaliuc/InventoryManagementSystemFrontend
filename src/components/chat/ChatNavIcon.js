@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import {
   IconButton,
   Badge,
@@ -21,7 +21,9 @@ import {
   Circle as CircleIcon
 } from '@mui/icons-material';
 import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../context/AuthContext';
 import ChatService from '../../services/ChatService';
+import websocketService from '../../services/WebSocketService';
 import { keyframes } from '@mui/system';
 
 const pulse = keyframes`
@@ -35,18 +37,35 @@ const ChatNavIcon = () => {
   const [recentChats, setRecentChats] = useState([]);
   const [menuAnchor, setMenuAnchor] = useState(null);
   const navigate = useNavigate();
+  const { currentUser } = useContext(AuthContext);
+  const unreadSubRef = useRef(null);
 
   useEffect(() => {
     fetchUnreadCount();
     fetchRecentChats();
-    
-    const interval = setInterval(() => {
-      fetchUnreadCount();
-      fetchRecentChats();
-    }, 30000);
-    
-    return () => clearInterval(interval);
-  }, []);
+
+    // Subscribe to real-time unread count updates for this user
+    const subTimeout = setTimeout(() => {
+      if (!currentUser?.id) return;
+      unreadSubRef.current = websocketService.subscribe(
+        `/topic/chat/unread/${currentUser.id}`,
+        ({ unreadCount: count }) => {
+          setUnreadCount(count);
+          // Re-fetch so hasUnread reflects authoritative server state
+          // (this event fires for both new messages AND mark-as-read)
+          fetchRecentChats();
+        }
+      );
+    }, 200);
+
+    return () => {
+      clearTimeout(subTimeout);
+      if (unreadSubRef.current) {
+        unreadSubRef.current.unsubscribe();
+        unreadSubRef.current = null;
+      }
+    };
+  }, [currentUser?.id]);
 
   const fetchUnreadCount = async () => {
     try {

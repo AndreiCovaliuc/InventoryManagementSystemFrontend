@@ -1,14 +1,19 @@
 # Inventra - Inventory Management System Frontend
 
-A modern React-based inventory management system with real-time notifications, AI assistant, and multi-tenant support.
+A modern React-based inventory management system with real-time WebSocket communication, AI assistant, presence tracking, and multi-tenant support.
 
 ## Tech Stack
 
-- **React 18** - Frontend framework
-- **Material-UI (MUI)** - Component library
-- **Recharts** - Charts and data visualization
-- **Axios** - HTTP client
-- **React Router v6** - Routing
+- **React 19** - Frontend framework
+- **Material-UI (MUI) v6** - Component library and icons
+- **MUI X Date Pickers v7** - Date/time picker components
+- **Recharts v2** - Charts and data visualization
+- **Axios v1** - HTTP client with interceptors
+- **React Router v7** - Client-side routing
+- **STOMP.js v7 + SockJS** - WebSocket real-time communication
+- **date-fns** - Date manipulation
+- **emoji-picker-react** - Emoji picker in chat
+- **Emotion** - CSS-in-JS styling engine
 
 ## Project Structure
 
@@ -16,111 +21,150 @@ A modern React-based inventory management system with real-time notifications, A
 src/
 ├── components/
 │   ├── ai/
-│   │   └── AIAssistant.js        # Floating AI chat assistant
+│   │   └── AIAssistant.js            # Floating AI chat assistant (side panel)
 │   ├── auth/
-│   │   ├── Login.js              # User login page
-│   │   ├── CompanyRegister.js    # Company + admin registration
-│   │   ├── Register.js           # Basic user registration
-│   │   └── AuthTest.js           # Auth testing component
+│   │   ├── Login.js                  # User login page
+│   │   ├── CompanyRegister.js        # Company + admin registration
+│   │   ├── Register.js               # User registration
+│   │   └── AuthTest.js               # Auth testing component
 │   ├── categories/
-│   │   └── CategoryList.js       # Category management (CRUD)
+│   │   └── CategoryList.js           # Category management (CRUD)
 │   ├── chat/
-│   │   ├── ChatList.js           # List of conversations
-│   │   ├── ChatDetail.js         # Individual chat view
-│   │   ├── ChatNavIcon.js        # Navbar chat icon with badge
-│   │   ├── Message.js            # Chat message component
-│   │   └── NewChatDialog.js      # Create new chat dialog
+│   │   ├── ChatList.js               # List of conversations
+│   │   ├── ChatDetail.js             # Individual chat view with emoji picker
+│   │   ├── ChatNavIcon.js            # Navbar chat icon with unread badge
+│   │   ├── Message.js                # Chat message component
+│   │   └── NewChatDialog.js          # Create new chat dialog
 │   ├── common/
-│   │   ├── ProtectedRoute.js     # Route protection wrapper
-│   │   ├── Unauthorized.js       # 403 unauthorized page
-│   │   └── EmptyState.js         # Empty state placeholder
+│   │   ├── ProtectedRoute.js         # Route protection wrapper
+│   │   ├── Unauthorized.js           # 403 unauthorized page
+│   │   └── EmptyState.js             # Empty state placeholder
 │   ├── dashboard/
-│   │   └── Dashboard.js          # Main dashboard with stats & charts
+│   │   └── Dashboard.js              # Main dashboard with stats & charts
 │   ├── inventory/
-│   │   └── InventoryList.js      # Inventory management
+│   │   └── InventoryList.js          # Inventory management (CRUD)
 │   ├── layout/
-│   │   └── Navbar.js             # Main navigation bar
+│   │   └── Navbar.js                 # Main navigation bar
 │   ├── notifications/
-│   │   └── NotificationsSystem.js # Notifications dropdown
+│   │   └── NotificationsSystem.js    # Notifications dropdown
 │   ├── products/
-│   │   ├── ProductList.js        # Product list view
-│   │   ├── ProductDetail.js      # Product details page
-│   │   └── ProductForm.js        # Create/edit product form
+│   │   ├── ProductList.js            # Product list with search/filter
+│   │   ├── ProductDetail.js          # Product details page
+│   │   └── ProductForm.js            # Create/edit product form
 │   ├── suppliers/
-│   │   └── SupplierList.js       # Supplier management (CRUD)
+│   │   └── SupplierList.js           # Supplier management (CRUD)
 │   ├── transactions/
-│   │   ├── TransactionList.js    # Transaction history
-│   │   ├── TransactionDetail.js  # Transaction details
-│   │   └── TransactionForm.js    # Create transaction form
+│   │   ├── TransactionList.js        # Transaction history
+│   │   ├── TransactionDetail.js      # Transaction details
+│   │   └── TransactionForm.js        # Create transaction form
 │   └── users/
-│       ├── UserList.js           # User management (admin only)
-│       └── UserProfile.js        # User profile page
+│       ├── UserList.js               # User management (admin only)
+│       └── UserProfile.js            # User profile page
 ├── context/
-│   └── AuthContext.js            # Authentication context provider
+│   ├── AuthContext.js                # Authentication context provider
+│   └── PresenceContext.js            # Real-time online presence tracking
 ├── services/
-│   ├── AIService.js              # AI assistant API calls
-│   ├── ApiService.js             # Base API configuration
-│   ├── AuthHeader.js             # JWT token header helper
-│   ├── AuthService.js            # Authentication API calls
-│   ├── AxiosInterceptor.js       # Axios request/response interceptors
-│   ├── ChatService.js            # Chat API calls
-│   ├── InventoryService.js       # Inventory API calls
-│   ├── NotificationService.js    # Notification API calls
-│   ├── ProductService.js         # Product API calls
-│   ├── TransactionService.js     # Transaction API calls
-│   └── UserService.js            # User API calls
-├── App.js                        # Main app with routes
-├── App.css                       # Global styles
-└── index.js                      # Entry point
+│   ├── AIService.js                  # AI assistant API calls
+│   ├── ApiService.js                 # Base API configuration
+│   ├── AuthHeader.js                 # JWT token header helper
+│   ├── AuthService.js                # Authentication API calls
+│   ├── AxiosInterceptor.js           # Axios request/response interceptors
+│   ├── ChatService.js                # Chat API calls
+│   ├── InventoryService.js           # Inventory API calls
+│   ├── NotificationService.js        # Notification API calls
+│   ├── ProductService.js             # Product API calls
+│   ├── TransactionService.js         # Transaction API calls
+│   ├── UserService.js                # User API calls
+│   └── WebSocketService.js           # STOMP WebSocket connection manager
+├── types/
+│   └── Transaction.ts                # Transaction TypeScript interface
+├── App.js                            # Main app with routes
+├── App.css                           # Global styles
+└── index.js                          # Entry point
 ```
 
 ## Features
 
 ### Authentication & Authorization
-- JWT-based authentication
-- Role-based access control (ADMIN, MANAGER, EMPLOYEE)
+- JWT-based authentication with token injection via Axios interceptors
+- Role-based access control: **ADMIN**, **MANAGER**, **EMPLOYEE**
 - Protected routes with role checking
-- Company registration with admin setup
+- Company registration with admin account setup
 
 ### Dashboard
-- Real-time statistics cards with trend indicators
-- Inventory history chart with zoom/pan (Brush component)
+- Statistics cards with trend comparison vs previous day
+- Inventory history area chart with Brush zoom/pan
 - Product categories pie chart
-- Low stock items alerts
-- Recent suppliers and activity
+- Low stock items alerts with auto-refresh (30s)
+- Real-time update triggers via WebSocket
 
 ### Inventory Management
-- Product CRUD operations
+- Product CRUD with detail view and form-based create/edit
 - Category management
 - Supplier management
-- Stock level tracking
-- Low stock alerts with reorder levels
+- Stock level tracking with reorder levels
+- Low stock alerts
 
 ### Transactions
-- Stock in/out tracking
-- Transaction history
-- Detailed transaction records
+- Transaction types: PURCHASE, SALE, RETURN, ADJUSTMENT, TRANSFER
+- Transaction history with detail view
+- Reference number, unit price, and total amount tracking
 
-### Communication
-- Real-time chat between users
-- Notification system
-- Unread message badges
+### Real-time Chat
+- One-on-one messaging between company users
+- Emoji picker support
+- Unread message badges in navbar
+- Online/offline presence indicators
+- 10-second message polling
+
+### Presence System
+- Real-time online user tracking via WebSocket STOMP
+- Online users list via REST API
+- User availability shown in chat interfaces
+- `PresenceContext` provides company-scoped presence state
+
+### Notification System
+- Unread notification count in navbar
+- Mark individual or all notifications as read
+- Delete notifications
+- Dropdown notification panel
 
 ### AI Assistant
-- Floating chat button (bottom-right)
-- Side panel that doesn't block page interaction
-- Contextual inventory questions
+- Floating button (bottom-right)
+- Non-blocking side panel
+- Quick suggestion chips:
+  - "What products are low on stock?"
+  - "Show inventory summary"
+  - "List all suppliers"
+  - "Show recent transactions"
+- Session message history with typing indicators
 
 ### User Management (Admin)
-- Create/edit/delete users
-- Role assignment
-- Form validation (email, password strength)
+- Create, edit, delete users
+- Role assignment (ADMIN, MANAGER, EMPLOYEE)
+- Password strength and email format validation
 
-## API Endpoints Used
+### Multi-Tenant Export
+- Company-scoped data export functionality
+- Cascade delete for products and associated data
+
+## WebSocket Integration
+
+The app uses STOMP over SockJS for real-time features:
+
+| Topic | Purpose |
+|-------|---------|
+| `/topic/presence/{companyId}` | Online/offline presence updates |
+| `/topic/updates/{companyId}` | Entity change notifications (products, inventory) |
+
+**Connection endpoint:** `http://localhost:8080/ws`
+
+## API Endpoints
 
 ### Authentication
-- `POST /api/auth/login` - User login
-- `POST /api/auth/register-company` - Company registration
+- `POST /api/auth/login`
+- `POST /api/auth/register-company`
+- `POST /api/auth/register`
 
 ### Users
 - `GET /api/users/{id}` - Get user profile
@@ -131,47 +175,58 @@ src/
 - `DELETE /api/admin/users/{id}` - Delete user (admin)
 
 ### Products
-- `GET /api/products` - List products
-- `POST /api/products` - Create product
-- `PUT /api/products/{id}` - Update product
-- `DELETE /api/products/{id}` - Delete product
+- `GET /api/products`
+- `POST /api/products`
+- `GET /api/products/{id}`
+- `PUT /api/products/{id}`
+- `DELETE /api/products/{id}`
 
 ### Categories
-- `GET /api/categories` - List categories
-- `POST /api/categories` - Create category
-- `PUT /api/categories/{id}` - Update category
-- `DELETE /api/categories/{id}` - Delete category
+- `GET /api/categories`
+- `POST /api/categories`
+- `PUT /api/categories/{id}`
+- `DELETE /api/categories/{id}`
 
 ### Suppliers
-- `GET /api/suppliers` - List suppliers
-- `POST /api/suppliers` - Create supplier
-- `PUT /api/suppliers/{id}` - Update supplier
-- `DELETE /api/suppliers/{id}` - Delete supplier
+- `GET /api/suppliers`
+- `POST /api/suppliers`
+- `PUT /api/suppliers/{id}`
+- `DELETE /api/suppliers/{id}`
 
 ### Inventory
-- `GET /api/inventory` - List inventory
-- `GET /api/inventory/low-stock` - Get low stock items
-- `GET /api/inventory-history/recent` - Get inventory history
+- `GET /api/inventory`
+- `GET /api/inventory/low-stock`
+- `GET /api/inventory-history/recent`
 
-### Stats
-- `GET /api/stats/previous` - Get previous day stats snapshot
-- `POST /api/stats/snapshot` - Create stats snapshot
-
-### Notifications
-- `GET /api/notifications` - List notifications
-- `GET /api/notifications/count-unread` - Get unread count
-- `PUT /api/notifications/{id}/read` - Mark as read
+### Transactions
+- `GET /api/transactions`
+- `POST /api/transactions`
+- `GET /api/transactions/{id}`
 
 ### Chat
-- `GET /api/chats` - List chats
-- `GET /api/chats/recent` - Get recent chats
-- `GET /api/chats/unread-count` - Get unread count
-- `POST /api/chats` - Create chat
-- `GET /api/chats/{id}/messages` - Get messages
+- `GET /api/chats`
+- `POST /api/chats`
+- `GET /api/chats/recent`
+- `GET /api/chats/unread-count`
+- `GET /api/chats/{id}/messages`
+- `POST /api/chats/{id}/messages`
+
+### Notifications
+- `GET /api/notifications`
+- `GET /api/notifications/count-unread`
+- `PUT /api/notifications/{id}/mark-read`
+- `DELETE /api/notifications/{id}`
+
+### Presence
+- `GET /api/presence/online`
+
+### Stats
+- `GET /api/stats/previous`
+- `POST /api/stats/snapshot`
 
 ### AI
-- `POST /api/ai/ask` - Ask AI assistant
-- `GET /api/ai/health` - AI health check
+- `POST /api/ai/ask`
+- `GET /api/ai/health`
 
 ## Form Validation
 
@@ -190,7 +245,11 @@ src/
 
 ## Environment Configuration
 
-The app connects to a backend at `http://localhost:8080`. To change this, update the API URLs in the service files.
+The app connects to a backend at `http://localhost:8080`. To change this, update the base URL in the relevant service files:
+- `src/services/ApiService.js`
+- `src/services/AuthService.js`
+- `src/services/ChatService.js`
+- `src/services/WebSocketService.js`
 
 ## Getting Started
 
@@ -212,88 +271,101 @@ npm test
 
 ### Dashboard.js
 Main dashboard (~1400 lines). Contains:
-- 4 stat cards with trend indicators
-- Inventory history chart (AreaChart with Brush)
-- Product categories pie chart
+- 4 stat cards with trend indicators (30s auto-refresh)
+- Inventory history AreaChart with Brush zoom control
+- Product categories PieChart
 - Low stock items list
-- Recent suppliers
+- WebSocket-triggered data refreshes
 
 ### Navbar.js
 Navigation with:
 - Logo and branding
-- Navigation links based on role
+- Role-based navigation links
 - Notifications dropdown
 - Chat icon with unread badge
-- User menu
+- User menu with logout
+- Mobile-responsive drawer
 
 ### AIAssistant.js
 Floating AI chat:
 - Bottom-right floating button
-- Side panel (non-modal)
-- Suggested questions
-- Message history
+- Non-modal side panel
+- Quick suggestion chips
+- Session message history
 
 ### AuthContext.js
-Authentication state management:
-- Current user state
+Authentication state:
+- Current user and company info
 - Login/logout functions
-- Token management
+- JWT token management
 - Role checking helpers
+
+### PresenceContext.js
+Real-time presence state:
+- Online users list (company-scoped)
+- WebSocket STOMP subscription
+- Exposes helpers for checking if a user is online
+
+### WebSocketService.js
+STOMP WebSocket manager:
+- Connect/disconnect lifecycle
+- Topic subscriptions
+- Reconnect logic
 
 ## Styling
 
-- Uses MUI's `sx` prop for inline styling
+- MUI `sx` prop for inline responsive styling
 - Custom fonts: Poppins, Roboto, Montserrat
 - Color scheme: Blues (#3498db, #2980b9), Greens (#2ecc71, #27ae60), Reds (#e74c3c)
-- Consistent border radius: 8px-12px
+- Consistent border radius: 8px–12px
 - Gradient backgrounds on cards and buttons
 
 ## User Roles
 
 | Role | Permissions |
 |------|-------------|
-| ADMIN | Full access to all features including user management |
-| MANAGER | Access to inventory, products, categories, suppliers, transactions |
-| EMPLOYEE | Limited access to view inventory and basic operations |
-
-## Known Issues / TODOs
-
-1. **Profile Update 401 Error**: Backend needs to allow `PUT /api/users/{id}` for authenticated users
-2. **Stats Snapshot Date**: Ensure backend creates snapshots with correct date
+| ADMIN | Full access including user management and admin operations |
+| MANAGER | Inventory, products, categories, suppliers, transactions |
+| EMPLOYEE | Limited read/basic operations on inventory |
 
 ## Multi-Tenancy
 
-The system supports multiple companies:
-- Each company has isolated data
+- Each company has fully isolated data
 - Users belong to one company
-- Company ID is derived from JWT token on backend
+- Company ID is embedded in the JWT token
+- WebSocket subscriptions are scoped per company ID
+- Export and cascade delete operations are company-scoped
 
-## Available Scripts
+## Dependencies
 
-### `npm start`
-Runs the app in development mode at [http://localhost:3000](http://localhost:3000)
-
-### `npm test`
-Launches the test runner
-
-### `npm run build`
-Builds the app for production to the `build` folder
-
-### `npm run eject`
-Ejects from Create React App (one-way operation)
+| Package | Version | Purpose |
+|---------|---------|---------|
+| react | 19.0.0 | UI framework |
+| @mui/material | 6.4.7 | Component library |
+| @mui/icons-material | 6.4.7 | Material icons |
+| @mui/x-date-pickers | 7.27.3 | Date/time pickers |
+| recharts | 2.15.1 | Charts |
+| axios | 1.8.2 | HTTP client |
+| react-router-dom | 7.3.0 | Routing |
+| @stomp/stompjs | 7.2.1 | WebSocket STOMP |
+| sockjs-client | 1.6.1 | WebSocket fallback |
+| date-fns | 2.29.3 | Date utilities |
+| emoji-picker-react | 4.15.1 | Emoji picker |
+| @emotion/react | 11.14.0 | CSS-in-JS |
 
 ## Browser Support
 
-- Modern browsers (Chrome, Firefox, Safari, Edge)
-- Responsive design for mobile/tablet/desktop
+Modern browsers: Chrome, Firefox, Safari, Edge. Responsive layout for mobile, tablet, and desktop.
 
-## Contributing
+## Available Scripts
 
-1. Create a feature branch
-2. Make your changes
-3. Test thoroughly
-4. Create a pull request
+| Script | Description |
+|--------|-------------|
+| `npm start` | Dev server at http://localhost:3000 |
+| `npm test` | Jest test runner |
+| `npm run build` | Production build to `/build` |
+| `npm run eject` | Eject from CRA (irreversible) |
 
 ---
 
-Last updated: November 2025
+Last updated: March 2026

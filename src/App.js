@@ -13,7 +13,6 @@ import UserList from './components/users/UserList';
 import UserProfile from './components/users/UserProfile'; 
 import Unauthorized from './components/common/Unauthorized';
 import ProtectedRoute from './components/common/ProtectedRoute';
-import AuthTest from './components/auth/AuthTest';
 import TransactionList from './components/transactions/TransactionList';
 import TransactionDetail from './components/transactions/TransactionDetail';
 import TransactionForm from './components/transactions/TransactionForm';
@@ -33,14 +32,6 @@ function App() {
           <div className="App">
             <Routes>
 
-          <Route path="/auth-test" element={
-  <>
-    <Navbar />
-    <Container style={{ marginTop: '20px' }}>
-      <AuthTest />
-    </Container>
-  </>
-} />
             {/* Public routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/register-company" element={<CompanyRegister />} />

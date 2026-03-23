@@ -24,7 +24,7 @@ const Register = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const { register, isAdmin } = useContext(AuthContext);
+  const { register } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const [name, setName] = useState('');
@@ -38,13 +38,6 @@ const Register = () => {
     message: '',
     severity: 'error'
   });
-
-  // Check if user is admin, otherwise redirect
-  React.useEffect(() => {
-    if (!isAdmin()) {
-      navigate('/dashboard');
-    }
-  }, [isAdmin, navigate]);
 
   const handleCloseSnackbar = () => {
     setSnackbar({

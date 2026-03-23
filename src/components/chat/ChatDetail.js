@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useRef, useContext } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Paper, 
-  TextField, 
-  IconButton, 
-  Avatar, 
-  Badge, 
+import React, { useState, useEffect, useRef, useContext, useCallback } from 'react';
+import {
+  Box,
+  Typography,
+  Paper,
+  TextField,
+  IconButton,
+  Avatar,
+  Badge,
   CircularProgress,
   Fade,
   Grow,
@@ -18,12 +18,12 @@ import {
   ArrowBack as ArrowBackIcon,
   MoreVert as MoreVertIcon,
   EmojiEmotions as EmojiIcon,
-  AttachFile as AttachIcon,
   KeyboardArrowDown as ScrollDownIcon
 } from '@mui/icons-material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import ChatService from '../../services/ChatService';
+import websocketService from '../../services/WebSocketService';
 import Message from './Message';
 import { keyframes } from '@mui/system';
 import EmojiPicker from 'emoji-picker-react';
@@ -55,22 +55,42 @@ const ChatDetail = () => {
   const messagesEndRef = useRef(null);
   const messageListRef = useRef(null);
   const inputRef = useRef(null);
-  
+  const chatSubRef = useRef(null);
+
   // Emoji picker state
   const [anchorEl, setAnchorEl] = useState(null);
 
-  useEffect(() => {
-    if (chatId) {
-      fetchChatInfo();
-      fetchMessages();
-      
-      const interval = setInterval(() => {
-        fetchMessages(false);
-      }, 5000);
-      
-      return () => clearInterval(interval);
-    }
+  // Append incoming WS message, deduplicating by id
+  const handleIncomingMessage = useCallback((msg) => {
+    setMessages(prev => {
+      if (prev.some(m => m.id === msg.id)) return prev;
+      ChatService.markChatAsRead(chatId);
+      return [...prev, msg];
+    });
   }, [chatId]);
+
+  useEffect(() => {
+    if (!chatId) return;
+
+    fetchChatInfo();
+    fetchMessages();
+
+    // Give the WebSocket a moment to connect (PresenceContext connects it async)
+    const subTimeout = setTimeout(() => {
+      chatSubRef.current = websocketService.subscribe(
+        `/topic/chat/${chatId}`,
+        handleIncomingMessage
+      );
+    }, 200);
+
+    return () => {
+      clearTimeout(subTimeout);
+      if (chatSubRef.current) {
+        chatSubRef.current.unsubscribe();
+        chatSubRef.current = null;
+      }
+    };
+  }, [chatId, handleIncomingMessage]);
 
   useEffect(() => {
     scrollToBottom();
@@ -125,9 +145,14 @@ const ChatDetail = () => {
     
     setSending(true);
     try {
-      await ChatService.sendMessage(chatId, newMessage);
+      const response = await ChatService.sendMessage(chatId, newMessage);
+      // Optimistically append; WS broadcast will also arrive but dedup handles it
+      if (response?.data) {
+        setMessages(prev =>
+          prev.some(m => m.id === response.data.id) ? prev : [...prev, response.data]
+        );
+      }
       setNewMessage('');
-      await fetchMessages(false);
       inputRef.current?.focus();
     } catch (error) {
       console.error('Error sending message:', error);
@@ -474,22 +499,6 @@ const ChatDetail = () => {
               gap: 1.5,
             }}
           >
-            {/* Commented out file attachment */}
-            {/* <Tooltip title="Attach file">
-              <IconButton 
-                sx={{ 
-                  color: '#95a5a6',
-                  transition: 'all 0.2s ease',
-                  '&:hover': {
-                    color: '#3498db',
-                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                  }
-                }}
-              >
-                <AttachIcon />
-              </IconButton>
-            </Tooltip> */}
-            
             <TextField
               fullWidth
               placeholder="Type your message..."
