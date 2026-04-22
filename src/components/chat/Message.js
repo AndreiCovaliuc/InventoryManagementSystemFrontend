@@ -30,6 +30,8 @@ const Message = ({ message, isOwn }) => {
         justifyContent: isOwn ? 'flex-end' : 'flex-start',
         mb: 2,
         px: 1,
+        width: '100%',
+        boxSizing: 'border-box',
         animation: `${fadeInUp} 0.3s ease-out`,
       }}
     >
