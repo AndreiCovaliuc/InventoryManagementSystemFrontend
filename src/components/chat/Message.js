@@ -3,6 +3,7 @@ import { Box, Typography, Paper } from '@mui/material';
 import DoneIcon from '@mui/icons-material/Done';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import { keyframes } from '@mui/system';
+import { parseBackendDate } from '../../utils/datetime';
 
 // Subtle entrance animation
 const fadeInUp = keyframes`
@@ -19,7 +20,8 @@ const fadeInUp = keyframes`
 const Message = ({ message, isOwn }) => {
   const formatTime = (timestamp) => {
     if (!timestamp) return '';
-    const date = new Date(timestamp);
+    const date = parseBackendDate(timestamp);
+    if (!date) return '';
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 

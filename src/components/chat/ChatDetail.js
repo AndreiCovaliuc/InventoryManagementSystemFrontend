@@ -28,6 +28,7 @@ import Message from './Message';
 import { keyframes } from '@mui/system';
 import EmojiPicker from 'emoji-picker-react';
 import { Popover } from '@mui/material';
+import { parseBackendDate } from '../../utils/datetime';
 
 const pulse = keyframes`
   0%, 100% { transform: scale(1); }
@@ -168,7 +169,8 @@ const ChatDetail = () => {
   const getMessageGroups = () => {
     const groups = {};
     messages.forEach(message => {
-      const date = new Date(message.timestamp).toLocaleDateString();
+      const parsed = parseBackendDate(message.timestamp);
+      const date = (parsed || new Date(message.timestamp)).toLocaleDateString();
       if (!groups[date]) groups[date] = [];
       groups[date].push(message);
     });

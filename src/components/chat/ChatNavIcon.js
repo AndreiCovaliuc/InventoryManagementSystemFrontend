@@ -24,6 +24,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import ChatService from '../../services/ChatService';
 import websocketService from '../../services/WebSocketService';
+import { parseBackendDate } from '../../utils/datetime';
 import { keyframes } from '@mui/system';
 
 const pulse = keyframes`
@@ -109,7 +110,8 @@ const ChatNavIcon = () => {
   const formatRelativeTime = (timestamp) => {
     if (!timestamp) return '';
     const now = new Date();
-    const messageTime = new Date(timestamp);
+    const messageTime = parseBackendDate(timestamp);
+    if (!messageTime) return '';
     const diffMs = now - messageTime;
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMins / 60);

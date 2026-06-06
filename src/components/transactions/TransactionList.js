@@ -51,6 +51,7 @@ import ReceiptIcon from '@mui/icons-material/Receipt';
 import { Link, useNavigate } from 'react-router-dom';
 import TransactionService from '../../services/TransactionService';
 import format from 'date-fns/format';
+import { parseBackendDate } from '../../utils/datetime';
 
 // Get auth header function
 function authHeader() {
@@ -136,15 +137,15 @@ const TransactionList = () => {
     // Apply date range filters
     if (filters.startDate) {
       result = result.filter(transaction => {
-        const transactionDate = new Date(transaction.transactionDate);
-        return transactionDate >= filters.startDate;
+        const transactionDate = parseBackendDate(transaction.transactionDate);
+        return transactionDate && transactionDate >= filters.startDate;
       });
     }
-    
+
     if (filters.endDate) {
       result = result.filter(transaction => {
-        const transactionDate = new Date(transaction.transactionDate);
-        return transactionDate <= filters.endDate;
+        const transactionDate = parseBackendDate(transaction.transactionDate);
+        return transactionDate && transactionDate <= filters.endDate;
       });
     }
     
@@ -277,7 +278,8 @@ const TransactionList = () => {
 
   const formatDate = (dateString) => {
     if (!dateString) return '-';
-    return format(new Date(dateString), 'MMM dd, yyyy HH:mm');
+    const date = parseBackendDate(dateString);
+    return date ? format(date, 'MMM dd, yyyy HH:mm') : '-';
   };
 
   if (loading && transactions.length === 0) {

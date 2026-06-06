@@ -1,8 +1,33 @@
 import axios from 'axios';
 import AuthService from './AuthService';
 
+// Holds the react-router navigate fn once the app mounts, so the response
+// interceptor can redirect WITHOUT a full-page reload (window.location.href
+// reloads the whole SPA, causing a jarring blank flash). Set via setAuthNavigate.
+let authNavigate = null;
+export const setAuthNavigate = (fn) => {
+  authNavigate = fn;
+};
+
+// Redirect to /login without remounting the whole app when possible.
+const redirectToLogin = () => {
+  // Avoid redundant redirects (and reload loops) if we're already there.
+  if (window.location.pathname === '/login') return;
+  if (authNavigate) {
+    authNavigate('/login');
+  } else {
+    window.location.href = '/login';
+  }
+};
+
+// Guard so interceptors are only registered once even if setup runs again.
+let registered = false;
+
 // Function to setup axios interceptors
 const setupInterceptors = (navigate) => {
+  if (navigate) setAuthNavigate(navigate);
+  if (registered) return;
+  registered = true;
   // Request interceptor
   // In AxiosInterceptor.js, update the request interceptor
 axios.interceptors.request.use(
@@ -46,28 +71,29 @@ axios.interceptors.request.use(
         return Promise.reject(error);
       }
 
-      // Handle 401/403 errors but don't immediately log out on all requests
+      // Handle 401/403 errors but don't immediately log out on all requests.
       if (error.response && (error.response.status === 401 || error.response.status === 403)) {
         console.warn(`Authentication error ${error.response.status} for ${originalRequest.url}`);
-        
-        // Check if it's truly an expired token issue
+
         const currentUser = AuthService.getCurrentUser();
-        
-        // Only log out for authentication endpoints or when token is expired
-        if (!currentUser || 
-            originalRequest.url.includes('/api/auth/') || 
-            (currentUser.token && AuthService.isTokenExpired(currentUser.token))) {
-          console.log("Logging out due to authentication failure");
+        const url = originalRequest.url || '';
+
+        // Auth endpoints (login/register) handle their own errors in the form —
+        // don't force a global logout/redirect, which would reload the page and
+        // wipe the inline error message. A 403 on a permission-gated endpoint
+        // (e.g. non-admin hitting /api/admin/**) is also NOT a session problem.
+        const isAuthEndpoint = url.includes('/api/auth/');
+        const sessionInvalid =
+          !currentUser ||
+          (currentUser.token && AuthService.isTokenExpired(currentUser.token));
+
+        if (sessionInvalid && !isAuthEndpoint) {
+          console.log('Logging out due to expired/invalid session');
           AuthService.logout();
-          
-          if (navigate) {
-            navigate('/login');
-          } else if (window) {
-            window.location.href = '/login';
-          }
+          redirectToLogin();
         }
       }
-      
+
       return Promise.reject(error);
     }
   );

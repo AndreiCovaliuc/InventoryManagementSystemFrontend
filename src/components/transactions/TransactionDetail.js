@@ -35,6 +35,7 @@ import {
 } from '@mui/icons-material';
 import axios from 'axios';
 import { format } from 'date-fns';
+import { parseBackendDate } from '../../utils/datetime';
 import authHeader from '../../services/AuthHeader';
 
 const TransactionDetail = () => {
@@ -163,7 +164,8 @@ const TransactionDetail = () => {
   const formatDate = (dateString) => {
     if (!dateString) return '-';
     try {
-      return format(new Date(dateString), 'MMM dd, yyyy HH:mm');
+      const date = parseBackendDate(dateString);
+      return date ? format(date, 'MMM dd, yyyy HH:mm') : dateString;
     } catch (e) {
       return dateString;
     }

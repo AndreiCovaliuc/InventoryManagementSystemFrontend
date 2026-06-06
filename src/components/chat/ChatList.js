@@ -40,6 +40,7 @@ import ChatService from '../../services/ChatService';
 import websocketService from '../../services/WebSocketService';
 import NewChatDialog from './NewChatDialog';
 import { keyframes } from '@mui/system';
+import { parseBackendDate } from '../../utils/datetime';
 
 const pulse = keyframes`
   0%, 100% { transform: scale(1); opacity: 1; }
@@ -264,7 +265,8 @@ const ChatList = () => {
   const formatRelativeTime = (timestamp) => {
     if (!timestamp) return '';
     const now = new Date();
-    const messageTime = new Date(timestamp);
+    const messageTime = parseBackendDate(timestamp);
+    if (!messageTime) return '';
     const diffMs = now - messageTime;
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMins / 60);
@@ -279,7 +281,8 @@ const ChatList = () => {
 
   const formatMessageTime = (timestamp) => {
     if (!timestamp) return '';
-    const date = new Date(timestamp);
+    const date = parseBackendDate(timestamp);
+    if (!date) return '';
     return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
   };
 
@@ -816,9 +819,10 @@ const ChatList = () => {
                           let showTimestamp = true;
                           if (nextMsg) {
                             const sameSenderNext = nextMsg.senderId === msg.senderId;
-                            const currentTime = new Date(msg.timestamp);
-                            const nextTime = new Date(nextMsg.timestamp);
-                            const timeDiffMinutes = (nextTime - currentTime) / (1000 * 60);
+                            const currentTime = parseBackendDate(msg.timestamp);
+                            const nextTime = parseBackendDate(nextMsg.timestamp);
+                            const timeDiffMinutes =
+                              currentTime && nextTime ? (nextTime - currentTime) / (1000 * 60) : 0;
 
                             // Hide timestamp if same sender and less than 5 min gap
                             if (sameSenderNext && timeDiffMinutes < 5) {

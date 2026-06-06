@@ -27,13 +27,12 @@ export const PresenceProvider = ({ children }) => {
         if (response.data.length > 0) {
           console.log('PresenceContext: First user object:', response.data[0]);
         }
-        // Handle different possible formats from backend
-        const userIds = response.data.map(user => {
-          // If it's a number, use it directly
-          if (typeof user === 'number') return user;
-          // Otherwise try various property names
-          return user.id || user.userId || user.user_id;
-        });
+        // Handle different possible formats from backend. Normalize every id to
+        // a Number so Set membership matches the numeric ids the UI checks with.
+        const userIds = response.data
+          .map(user => (typeof user === 'number' ? user : user.id ?? user.userId ?? user.user_id))
+          .map(Number)
+          .filter(id => !Number.isNaN(id));
         console.log('PresenceContext: Setting online user IDs:', userIds);
         setOnlineUsers(new Set(userIds));
       }
@@ -76,15 +75,26 @@ export const PresenceProvider = ({ children }) => {
       return;
     }
 
-    // Handle presence updates
+    // Handle presence updates pushed over WebSocket. Tolerate different payload
+    // shapes (userId/id/user_id, online boolean or status string) and normalize
+    // the id to a Number to match what isUserOnline checks against.
     const handlePresenceUpdate = (update) => {
       console.log('PresenceContext: Received presence update:', update);
+      const rawId = update.userId ?? update.id ?? update.user_id;
+      const userId = Number(rawId);
+      if (Number.isNaN(userId)) return;
+
+      const isOnline =
+        typeof update.online === 'boolean'
+          ? update.online
+          : String(update.status).toUpperCase() === 'ONLINE';
+
       setOnlineUsers(prev => {
         const newSet = new Set(prev);
-        if (update.online) {
-          newSet.add(update.userId);
+        if (isOnline) {
+          newSet.add(userId);
         } else {
-          newSet.delete(update.userId);
+          newSet.delete(userId);
         }
         console.log('PresenceContext: Online users now:', Array.from(newSet));
         return newSet;
@@ -135,7 +145,7 @@ export const PresenceProvider = ({ children }) => {
   }, [connectWebSocket]);
 
   const isUserOnline = (userId) => {
-    return onlineUsers.has(userId);
+    return onlineUsers.has(Number(userId));
   };
 
   return (

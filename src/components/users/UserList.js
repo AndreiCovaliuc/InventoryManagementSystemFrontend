@@ -81,6 +81,7 @@ const ModernUserList = () => {
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentEditUser, setCurrentEditUser] = useState({
@@ -177,22 +178,23 @@ const ModernUserList = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/admin/users`, { 
-        headers: authHeader() 
+      const response = await axios.get(`${API_BASE_URL}/api/admin/users`, {
+        headers: authHeader()
       });
       setUsers(Array.isArray(response.data) ? response.data : []);
       setFilteredUsers(Array.isArray(response.data) ? response.data : []);
+      setLoadError(null);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching users:', error);
+      // Render a distinct error state (below) rather than letting an empty
+      // users array fall through to the "No users found" empty state.
       const message = error.response?.status === 403
         ? "You don't have permission to manage users — admin access required"
-        : 'Failed to load users. Please try again later.';
-      setSnackbar({
-        open: true,
-        message,
-        severity: 'error'
-      });
+        : extractErrorMessage(error, 'Failed to load users. Please try again later.');
+      setUsers([]);
+      setFilteredUsers([]);
+      setLoadError(message);
       setLoading(false);
     }
   };
@@ -493,7 +495,26 @@ const ModernUserList = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredUsers.length > 0 ? (
+              {loadError ? (
+                <TableRow>
+                  <TableCell colSpan={4} align="center" sx={{ py: 4 }}>
+                    <Typography variant="h6" color="error">
+                      Couldn't load users
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1, mb: 2 }}>
+                      {loadError}
+                    </Typography>
+                    <Button
+                      variant="outlined"
+                      startIcon={<RefreshIcon />}
+                      onClick={fetchUsers}
+                      sx={{ textTransform: 'none', borderRadius: '8px' }}
+                    >
+                      Retry
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ) : filteredUsers.length > 0 ? (
                 filteredUsers.map((user) => {
                   const roleStyles = getRoleColor(user.role);
                   return (

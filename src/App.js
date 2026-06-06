@@ -1,6 +1,7 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { Container } from '@mui/material';
+import { setAuthNavigate } from './services/AxiosInterceptor';
 import Navbar from './components/layout/Navbar';
 import Dashboard from './components/dashboard/Dashboard';
 import ProductList from './components/products/ProductList';
@@ -24,9 +25,20 @@ import CompanyRegister from './components/auth/CompanyRegister';
 import AIAssistant from './components/ai/AIAssistant';
 import './App.css';
 
+// Bridges react-router's navigate into the axios interceptor so auth redirects
+// happen client-side instead of via window.location (which reloads the SPA).
+function AuthNavigateBridge() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    setAuthNavigate(navigate);
+  }, [navigate]);
+  return null;
+}
+
 function App() {
   return (
     <Router>
+      <AuthNavigateBridge />
       <AuthProvider>
         <PresenceProvider>
           <div className="App">

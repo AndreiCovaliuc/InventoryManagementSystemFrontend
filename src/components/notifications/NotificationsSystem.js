@@ -28,6 +28,7 @@ import {
 import { formatDistance } from 'date-fns';
 import NotificationService from '../../services/NotificationService';
 import { AuthContext } from '../../context/AuthContext';
+import { parseBackendDate } from '../../utils/datetime';
 
 const NotificationsSystem = ({ buttonStyle }) => {
   const { currentUser } = useContext(AuthContext);
@@ -155,12 +156,10 @@ const NotificationsSystem = ({ buttonStyle }) => {
   // Format relative time (e.g., "5 minutes ago")
   const formatRelativeTime = (dateString) => {
     if (!dateString) return '';
-    try {
-      const date = new Date(dateString);
-      return formatDistance(date, new Date(), { addSuffix: true });
-    } catch (e) {
-      return dateString;
-    }
+    // Backend timestamps are UTC with no zone marker — parse as UTC.
+    const date = parseBackendDate(dateString);
+    if (!date) return dateString;
+    return formatDistance(date, new Date(), { addSuffix: true });
   };
 
   return (

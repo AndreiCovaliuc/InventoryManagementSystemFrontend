@@ -1,4 +1,5 @@
 import { API_BASE_URL } from '../../config';
+import { parseBackendDate } from '../../utils/datetime';
 import React, { useState, useEffect, useRef } from 'react';
 import { usePresence } from '../../context/PresenceContext';
 import { 
@@ -211,7 +212,7 @@ const ResponsiveDashboard = () => {
 
       if (Array.isArray(response.data) && response.data.length > 0) {
         const formattedHistory = response.data.map(item => ({
-          timestamp: new Date(item.timestamp),
+          timestamp: parseBackendDate(item.timestamp) || new Date(item.timestamp),
           label: formatDateLabel(item.timestamp),
           totalQuantity: item.totalQuantity,
           change: item.quantityChange || 0
@@ -233,7 +234,7 @@ const ResponsiveDashboard = () => {
   };
 
   const formatDateLabel = (dateStr) => {
-    const date = new Date(dateStr);
+    const date = parseBackendDate(dateStr) || new Date(dateStr);
     const month = date.toLocaleString('en-US', { month: 'short' });
     const day = date.getDate();
     
