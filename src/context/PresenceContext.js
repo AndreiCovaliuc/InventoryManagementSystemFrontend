@@ -2,14 +2,17 @@ import { API_BASE_URL } from '../config';
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import websocketService from '../services/WebSocketService';
 import axios from 'axios';
+import { AuthContext } from './AuthContext';
 
 const PresenceContext = createContext();
 
 export const usePresence = () => useContext(PresenceContext);
 
 export const PresenceProvider = ({ children }) => {
+  // Drive the WebSocket lifecycle off auth state so it reconnects on
+  // login-within-SPA and tears down on logout (not just on page mount).
+  const { currentUser } = useContext(AuthContext);
   const [onlineUsers, setOnlineUsers] = useState(new Set());
-  const [isConnected, setIsConnected] = useState(false);
   const [entityUpdateTrigger, setEntityUpdateTrigger] = useState(0);
   const [lastEntityUpdate, setLastEntityUpdate] = useState(null);
 
@@ -41,37 +44,19 @@ export const PresenceProvider = ({ children }) => {
     }
   }, []);
 
-  const connectWebSocket = useCallback(() => {
-    // Get user data from localStorage (token is stored inside user object)
-    const userStr = localStorage.getItem('user');
+  // (Re)connect whenever the authenticated session changes. Depending on the
+  // primitive token/companyId (not the currentUser object) means we reconnect
+  // on login and tear down on logout, but don't churn the socket when unrelated
+  // fields of currentUser change (e.g. the /me role merge).
+  const token = currentUser?.token;
+  const companyId = currentUser?.companyId;
 
-    console.log('PresenceContext: Checking for user data...', { hasUser: !!userStr });
-
-    if (!userStr) {
-      console.log('PresenceContext: No user found, skipping WebSocket connection');
-      return;
-    }
-
-    let user;
-    try {
-      user = JSON.parse(userStr);
-    } catch (err) {
-      console.error('PresenceContext: Error parsing user data:', err);
-      return;
-    }
-
-    const token = user.token;
-    const companyId = user.companyId;
-
-    console.log('PresenceContext: User data:', { hasToken: !!token, companyId });
-
-    if (!token) {
-      console.log('PresenceContext: No token found in user data, skipping WebSocket connection');
-      return;
-    }
-
-    if (!companyId) {
-      console.log('PresenceContext: No companyId found, skipping WebSocket connection');
+  useEffect(() => {
+    if (!token || !companyId) {
+      // Logged out (or session not ready): ensure no stale connection/state.
+      console.log('PresenceContext: No active session, disconnecting WebSocket');
+      websocketService.disconnect();
+      setOnlineUsers(new Set());
       return;
     }
 
@@ -108,41 +93,20 @@ export const PresenceProvider = ({ children }) => {
       setEntityUpdateTrigger(prev => prev + 1);
     };
 
-    // Connect to WebSocket
-    console.log('PresenceContext: Connecting to WebSocket...');
+    console.log('PresenceContext: Connecting to WebSocket...', { companyId });
     websocketService.connect(token, companyId, handlePresenceUpdate, handleEntityUpdate);
-    setIsConnected(true);
 
-    // Fetch initial online users after a short delay to ensure connection is established
-    setTimeout(() => {
+    // Fetch initial online users once the connection has had a moment to open.
+    const fetchTimeout = setTimeout(() => {
       fetchOnlineUsers(token);
     }, 500);
-  }, [fetchOnlineUsers]);
 
-  useEffect(() => {
-    // Use a small delay to handle React StrictMode double-mount
-    const timeoutId = setTimeout(() => {
-      connectWebSocket();
-    }, 100);
-
-    // Listen for logout (user removed from localStorage)
-    const handleStorageChange = (e) => {
-      if (e.key === 'user' && !e.newValue) {
-        console.log('PresenceContext: User logged out, disconnecting WebSocket');
-        websocketService.disconnect();
-        setOnlineUsers(new Set());
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-
-    // Cleanup on unmount
     return () => {
-      clearTimeout(timeoutId);
-      window.removeEventListener('storage', handleStorageChange);
+      clearTimeout(fetchTimeout);
       websocketService.disconnect();
+      setOnlineUsers(new Set());
     };
-  }, [connectWebSocket]);
+  }, [token, companyId, fetchOnlineUsers]);
 
   const isUserOnline = (userId) => {
     return onlineUsers.has(Number(userId));

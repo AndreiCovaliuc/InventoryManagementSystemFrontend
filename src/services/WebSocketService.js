@@ -90,6 +90,9 @@ class WebSocketService {
 
   disconnect() {
     this.isConnecting = false;
+    // Reset the throttle so an immediate reconnect (logout→login, or a
+    // StrictMode remount) isn't blocked by the 5s rapid-reconnect guard.
+    this.lastConnectionAttempt = 0;
     if (this.client) {
       // Unsubscribe from all subscriptions
       Object.values(this.subscriptions).forEach(sub => {
