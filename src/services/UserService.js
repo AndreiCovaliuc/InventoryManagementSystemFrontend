@@ -1,7 +1,8 @@
+import { API_BASE_URL } from '../config';
 import axios from 'axios';
 import authHeader from './AuthHeader';
 
-const API_URL = 'http://localhost:8080/api/admin/users/';
+const API_URL = `${API_BASE_URL}/api/admin/users/`;
 
 class UserService {
   getAllUsers() {

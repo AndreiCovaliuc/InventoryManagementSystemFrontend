@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../../config';
 import React, { useState, useEffect } from 'react';
 import { 
   Paper, 
@@ -37,15 +38,15 @@ const ProductForm = () => {
       setLoading(true);
       try {
         // Fetch categories and suppliers
-        const categoriesRes = await axios.get('http://localhost:8080/api/categories');
-        const suppliersRes = await axios.get('http://localhost:8080/api/suppliers');
+        const categoriesRes = await axios.get(`${API_BASE_URL}/api/categories`);
+        const suppliersRes = await axios.get(`${API_BASE_URL}/api/suppliers`);
         
         setCategories(categoriesRes.data);
         setSuppliers(suppliersRes.data);
         
         // If in edit mode, fetch the product details
         if (isEditMode) {
-          const productRes = await axios.get(`http://localhost:8080/api/products/${id}`);
+          const productRes = await axios.get(`${API_BASE_URL}/api/products/${id}`);
           setProduct(productRes.data);
         }
         
@@ -90,9 +91,9 @@ const ProductForm = () => {
     
     try {
       if (isEditMode) {
-        await axios.put(`http://localhost:8080/api/products/${id}`, product);
+        await axios.put(`${API_BASE_URL}/api/products/${id}`, product);
       } else {
-        await axios.post('http://localhost:8080/api/products', product);
+        await axios.post(`${API_BASE_URL}/api/products`, product);
       }
       
       navigate('/products');

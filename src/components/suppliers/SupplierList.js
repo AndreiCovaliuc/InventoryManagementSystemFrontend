@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../../config';
 import React, { useState, useEffect, useRef } from 'react';
 import { usePresence } from '../../context/PresenceContext';
 import {
@@ -116,7 +117,7 @@ const ModernSupplierList = () => {
   const fetchSuppliers = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:8080/api/suppliers', {
+      const response = await axios.get(`${API_BASE_URL}/api/suppliers`, {
         headers: authHeader()
       });
       
@@ -201,7 +202,7 @@ const ModernSupplierList = () => {
       let response;
       if (isEditing) {
         response = await axios.put(
-          `http://localhost:8080/api/suppliers/${currentSupplier.id}`, 
+          `${API_BASE_URL}/api/suppliers/${currentSupplier.id}`, 
           currentSupplier,
           {
             headers: {
@@ -221,7 +222,7 @@ const ModernSupplierList = () => {
         });
       } else {
         response = await axios.post(
-          'http://localhost:8080/api/suppliers', 
+          `${API_BASE_URL}/api/suppliers`, 
           currentSupplier,
           {
             headers: {
@@ -261,7 +262,7 @@ const ModernSupplierList = () => {
     if (!supplierToDelete) return;
     
     try {
-      await axios.delete(`http://localhost:8080/api/suppliers/${supplierToDelete.id}`, {
+      await axios.delete(`${API_BASE_URL}/api/suppliers/${supplierToDelete.id}`, {
         headers: authHeader()
       });
       

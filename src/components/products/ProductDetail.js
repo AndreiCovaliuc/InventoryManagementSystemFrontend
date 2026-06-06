@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../../config';
 // src/components/products/ProductDetail.js
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
@@ -21,7 +22,7 @@ const ProductDetail = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/products/${id}`);
+        const response = await axios.get(`${API_BASE_URL}/api/products/${id}`);
         setProduct(response.data);
         setLoading(false);
       } catch (err) {

@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../config';
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import websocketService from '../services/WebSocketService';
 import axios from 'axios';
@@ -15,7 +16,7 @@ export const PresenceProvider = ({ children }) => {
   // Fetch initial online users from REST API
   const fetchOnlineUsers = useCallback(async (token) => {
     try {
-      const response = await axios.get('http://localhost:8080/api/presence/online', {
+      const response = await axios.get(`${API_BASE_URL}/api/presence/online`, {
         headers: {
           Authorization: `Bearer ${token}`
         }

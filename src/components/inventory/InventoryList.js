@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../../config';
 import React, { useState, useEffect, useRef } from 'react';
 import { usePresence } from '../../context/PresenceContext';
 import {
@@ -117,8 +118,8 @@ const ModernInventoryList = () => {
     try {
       setLoading(true);
       const [inventoryRes, productsRes] = await Promise.all([
-        axios.get('http://localhost:8080/api/inventory', { headers: authHeader() }),
-        axios.get('http://localhost:8080/api/products', { headers: authHeader() })
+        axios.get(`${API_BASE_URL}/api/inventory`, { headers: authHeader() }),
+        axios.get(`${API_BASE_URL}/api/products`, { headers: authHeader() })
       ]);
       
       const newInventory = Array.isArray(inventoryRes.data) ? inventoryRes.data : [];
@@ -238,7 +239,7 @@ const ModernInventoryList = () => {
       let response;
       if (isEditing) {
         response = await axios.put(
-          `http://localhost:8080/api/inventory/${currentInventory.id}`, 
+          `${API_BASE_URL}/api/inventory/${currentInventory.id}`, 
           currentInventory,
           {
             headers: {
@@ -254,7 +255,7 @@ const ModernInventoryList = () => {
         });
       } else {
         response = await axios.post(
-          'http://localhost:8080/api/inventory', 
+          `${API_BASE_URL}/api/inventory`, 
           currentInventory,
           {
             headers: {
@@ -303,7 +304,7 @@ const ModernInventoryList = () => {
       
       // Call the API
       await axios.put(
-        `http://localhost:8080/api/inventory/update-quantity/${productId}`,
+        `${API_BASE_URL}/api/inventory/update-quantity/${productId}`,
         { quantityChange: change },
         {
           headers: {
@@ -321,7 +322,7 @@ const ModernInventoryList = () => {
       });
       
       // Fetch the latest data in the background without full UI refresh
-      const inventoryRes = await axios.get('http://localhost:8080/api/inventory', { 
+      const inventoryRes = await axios.get(`${API_BASE_URL}/api/inventory`, { 
         headers: authHeader() 
       });
       
@@ -363,7 +364,7 @@ const ModernInventoryList = () => {
       }
       
       await axios.delete(
-        `http://localhost:8080/api/inventory/${currentInventory.id}`,
+        `${API_BASE_URL}/api/inventory/${currentInventory.id}`,
         {
           headers: authHeader()
         }

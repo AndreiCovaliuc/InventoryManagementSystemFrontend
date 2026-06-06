@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../../config';
 import React, { useState, useEffect, useRef } from 'react';
 import { usePresence } from '../../context/PresenceContext';
 import {
@@ -103,7 +104,7 @@ const ModernCategoryList = () => {
   const fetchCategories = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:8080/api/categories', {
+      const response = await axios.get(`${API_BASE_URL}/api/categories`, {
         headers: authHeader()
       });
       
@@ -180,7 +181,7 @@ const ModernCategoryList = () => {
       let response;
       if (isEditing) {
         response = await axios.put(
-          `http://localhost:8080/api/categories/${currentCategory.id}`, 
+          `${API_BASE_URL}/api/categories/${currentCategory.id}`, 
           currentCategory,
           {
             headers: {
@@ -200,7 +201,7 @@ const ModernCategoryList = () => {
         });
       } else {
         response = await axios.post(
-          'http://localhost:8080/api/categories', 
+          `${API_BASE_URL}/api/categories`, 
           currentCategory,
           {
             headers: {
@@ -240,7 +241,7 @@ const ModernCategoryList = () => {
     if (!categoryToDelete) return;
     
     try {
-      await axios.delete(`http://localhost:8080/api/categories/${categoryToDelete.id}`, {
+      await axios.delete(`${API_BASE_URL}/api/categories/${categoryToDelete.id}`, {
         headers: authHeader()
       });
       

@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../../config';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { usePresence } from '../../context/PresenceContext';
 import {
@@ -130,9 +131,9 @@ const ModernProductList = () => {
     setLoading(true);
     try {
       const [productsRes, categoriesRes, suppliersRes] = await Promise.all([
-        axios.get('http://localhost:8080/api/products', { headers: authHeader() }),
-        axios.get('http://localhost:8080/api/categories', { headers: authHeader() }),
-        axios.get('http://localhost:8080/api/suppliers', { headers: authHeader() })
+        axios.get(`${API_BASE_URL}/api/products`, { headers: authHeader() }),
+        axios.get(`${API_BASE_URL}/api/categories`, { headers: authHeader() }),
+        axios.get(`${API_BASE_URL}/api/suppliers`, { headers: authHeader() })
       ]);
       
       setProducts(Array.isArray(productsRes.data) ? productsRes.data : []);
@@ -283,7 +284,7 @@ const ModernProductList = () => {
       let response;
       if (isEditing) {
         response = await axios.put(
-          `http://localhost:8080/api/products/${currentProduct.id}`, 
+          `${API_BASE_URL}/api/products/${currentProduct.id}`, 
           productToSave,
           {
             headers: {
@@ -303,7 +304,7 @@ const ModernProductList = () => {
         });
       } else {
         response = await axios.post(
-          'http://localhost:8080/api/products', 
+          `${API_BASE_URL}/api/products`, 
           productToSave,
           {
             headers: {
@@ -343,7 +344,7 @@ const ModernProductList = () => {
     if (!productToDelete) return;
     
     try {
-      await axios.delete(`http://localhost:8080/api/products/${productToDelete.id}`, {
+      await axios.delete(`${API_BASE_URL}/api/products/${productToDelete.id}`, {
         headers: authHeader()
       });
       

@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../../config';
 import React, { useState } from 'react';
 import { Box, Button, Paper, Typography, TextField, Stack, Alert } from '@mui/material';
 import axios from 'axios';
@@ -10,7 +11,7 @@ const AuthTest = () => {
 
   const testPublicEndpoint = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/test/public');
+      const response = await axios.get(`${API_BASE_URL}/api/test/public`);
       setTestResponse(JSON.stringify(response.data, null, 2));
       setError('');
     } catch (err) {
@@ -21,7 +22,7 @@ const AuthTest = () => {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post('http://localhost:8080/api/auth/login', loginData);
+      const response = await axios.post(`${API_BASE_URL}/api/auth/login`, loginData);
       setToken(response.data.token);
       setTestResponse(JSON.stringify(response.data, null, 2));
       setError('');
@@ -33,7 +34,7 @@ const AuthTest = () => {
 
   const testProtectedEndpoint = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/test/user', {
+      const response = await axios.get(`${API_BASE_URL}/api/test/user`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setTestResponse(JSON.stringify(response.data, null, 2));
@@ -46,7 +47,7 @@ const AuthTest = () => {
 
   const testAdminEndpoint = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/test/admin', {
+      const response = await axios.get(`${API_BASE_URL}/api/test/admin`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setTestResponse(JSON.stringify(response.data, null, 2));

@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../../config';
 import React, { useState, useEffect, useContext } from 'react';
 import {
   Box,
@@ -164,7 +165,7 @@ const ModernUserList = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:8080/api/admin/users', { 
+      const response = await axios.get(`${API_BASE_URL}/api/admin/users`, { 
         headers: authHeader() 
       });
       setUsers(Array.isArray(response.data) ? response.data : []);
@@ -216,14 +217,14 @@ const ModernUserList = () => {
       if (currentEditUser.id) {
         // Update user
         response = await axios.put(
-          `http://localhost:8080/api/admin/users/${currentEditUser.id}`, 
+          `${API_BASE_URL}/api/admin/users/${currentEditUser.id}`, 
           currentEditUser,
           { headers: { ...authHeader(), 'Content-Type': 'application/json' } }
         );
       } else {
         // Create user
         response = await axios.post(
-          'http://localhost:8080/api/admin/users', 
+          `${API_BASE_URL}/api/admin/users`, 
           currentEditUser,
           { headers: { ...authHeader(), 'Content-Type': 'application/json' } }
         );
@@ -251,7 +252,7 @@ const ModernUserList = () => {
     if (!userToDelete) return;
     
     try {
-      await axios.delete(`http://localhost:8080/api/admin/users/${userToDelete.id}`, {
+      await axios.delete(`${API_BASE_URL}/api/admin/users/${userToDelete.id}`, {
         headers: authHeader()
       });
       

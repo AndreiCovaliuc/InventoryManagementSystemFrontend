@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../../config';
 import React, { useState, useEffect, useRef } from 'react';
 import { usePresence } from '../../context/PresenceContext';
 import { 
@@ -106,15 +107,15 @@ const ResponsiveDashboard = () => {
         suppliersRes, 
         inventoryRes
       ] = await Promise.all([
-        axios.get('http://localhost:8080/api/products', { headers: authHeader() }),
-        axios.get('http://localhost:8080/api/categories', { headers: authHeader() }),
-        axios.get('http://localhost:8080/api/suppliers', { headers: authHeader() }),
-        axios.get('http://localhost:8080/api/inventory', { headers: authHeader() })
+        axios.get(`${API_BASE_URL}/api/products`, { headers: authHeader() }),
+        axios.get(`${API_BASE_URL}/api/categories`, { headers: authHeader() }),
+        axios.get(`${API_BASE_URL}/api/suppliers`, { headers: authHeader() }),
+        axios.get(`${API_BASE_URL}/api/inventory`, { headers: authHeader() })
       ]);
       
       let lowStockItems = [];
       try {
-        const lowStockItemsRes = await axios.get('http://localhost:8080/api/inventory/low-stock', { headers: authHeader() });
+        const lowStockItemsRes = await axios.get(`${API_BASE_URL}/api/inventory/low-stock`, { headers: authHeader() });
         lowStockItems = Array.isArray(lowStockItemsRes.data) ? lowStockItemsRes.data : [];
       } catch (err) {
         console.error('Error fetching low stock items:', err);
@@ -126,7 +127,7 @@ const ResponsiveDashboard = () => {
       // Fetch previous stats from backend
       let previousStats = null;
       try {
-        const previousStatsRes = await axios.get('http://localhost:8080/api/stats/previous', { headers: authHeader() });
+        const previousStatsRes = await axios.get(`${API_BASE_URL}/api/stats/previous`, { headers: authHeader() });
         if (previousStatsRes.status === 200 && previousStatsRes.data) {
           previousStats = previousStatsRes.data;
           setHasPreviousStats(true);
@@ -200,7 +201,7 @@ const ResponsiveDashboard = () => {
 
   const fetchHistoryData = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/inventory-history/recent', {
+      const response = await axios.get(`${API_BASE_URL}/api/inventory-history/recent`, {
         headers: authHeader()
       });
 
@@ -261,7 +262,7 @@ const ResponsiveDashboard = () => {
     try {
       setExporting(true);
       
-      const response = await axios.get('http://localhost:8080/api/export/excel', {
+      const response = await axios.get(`${API_BASE_URL}/api/export/excel`, {
         headers: {
           ...authHeader(),
           'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'

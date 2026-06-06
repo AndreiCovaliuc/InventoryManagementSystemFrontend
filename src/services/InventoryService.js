@@ -1,7 +1,8 @@
+import { API_BASE_URL } from '../config';
 import axios from 'axios';
 import authHeader from './AuthHeader';
 
-const BASE_URL = 'http://localhost:8080/api/inventory';
+const BASE_URL = `${API_BASE_URL}/api/inventory`;
 
 const InventoryService = {
   // Get all inventory items

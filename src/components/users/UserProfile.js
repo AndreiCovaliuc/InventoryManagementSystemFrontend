@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../../config';
 import React, { useState, useContext, useEffect } from 'react';
 import {
   Box,
@@ -84,7 +85,7 @@ const UserProfile = () => {
       if (currentUser) {
         try {
           const response = await axios.get(
-            `http://localhost:8080/api/users/${currentUser.id}`,
+            `${API_BASE_URL}/api/users/${currentUser.id}`,
             { headers: authHeader() }
           );
           
@@ -194,7 +195,7 @@ const UserProfile = () => {
       };
       
       await axios.put(
-        `http://localhost:8080/api/users/${currentUser.id}`, 
+        `${API_BASE_URL}/api/users/${currentUser.id}`, 
         updateData,
         { headers: authHeader() }
       );
@@ -247,7 +248,7 @@ const UserProfile = () => {
       };
       
       await axios.put(
-        `http://localhost:8080/api/users/${currentUser.id}`, 
+        `${API_BASE_URL}/api/users/${currentUser.id}`, 
         updatePayload,
         { headers: authHeader() }
       );

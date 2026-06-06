@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../config';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
@@ -28,7 +29,7 @@ class WebSocketService {
 
     this.client = new Client({
       // Use SockJS endpoint for better compatibility
-      webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+      webSocketFactory: () => new SockJS(`${API_BASE_URL}/ws`),
       connectHeaders: {
         Authorization: `Bearer ${token}`
       },

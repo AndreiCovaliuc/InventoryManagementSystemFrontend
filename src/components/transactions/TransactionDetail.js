@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../../config';
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
@@ -48,7 +49,7 @@ const TransactionDetail = () => {
     const fetchTransaction = async () => {
       try {
         // First fetch the transaction details
-        const response = await axios.get(`http://localhost:8080/api/transactions/${id}`, {
+        const response = await axios.get(`${API_BASE_URL}/api/transactions/${id}`, {
           headers: authHeader()
         });
         
@@ -67,7 +68,7 @@ const TransactionDetail = () => {
         
         if (transactionData && transactionData.productId && (!transactionData.productName || !transactionData.productSku)) {
           try {
-            const productResponse = await axios.get(`http://localhost:8080/api/products/${transactionData.productId}`, {
+            const productResponse = await axios.get(`${API_BASE_URL}/api/products/${transactionData.productId}`, {
               headers: authHeader()
             });
             
@@ -102,7 +103,7 @@ const TransactionDetail = () => {
           // Try different API endpoints that might provide user info
           try {
             // First try /api/admin/users/{id}
-            const userResponse = await axios.get(`http://localhost:8080/api/admin/users/${transactionData.userId}`, {
+            const userResponse = await axios.get(`${API_BASE_URL}/api/admin/users/${transactionData.userId}`, {
               headers: authHeader()
             });
             
@@ -118,7 +119,7 @@ const TransactionDetail = () => {
             
             // If admin endpoint fails, try /api/users/{id}
             try {
-              const regularUserResponse = await axios.get(`http://localhost:8080/api/users/${transactionData.userId}`, {
+              const regularUserResponse = await axios.get(`${API_BASE_URL}/api/users/${transactionData.userId}`, {
                 headers: authHeader()
               });
               

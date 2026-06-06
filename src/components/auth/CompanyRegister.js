@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../../config';
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
@@ -194,7 +195,7 @@ const CompanyRegister = () => {
 
     setLoading(true);
     try {
-      await axios.post('http://localhost:8080/api/auth/register-company', formData);
+      await axios.post(`${API_BASE_URL}/api/auth/register-company`, formData);
       setSnackbar({
         open: true,
         message: 'Company registered successfully! Redirecting to login...',
