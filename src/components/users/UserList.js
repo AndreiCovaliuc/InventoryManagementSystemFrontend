@@ -61,6 +61,18 @@ function authHeader() {
   }
 }
 
+// Pull a human-readable message out of an axios error.
+// AdminUserController validation failures return 400 with the message as a
+// plain-string body (e.g. "At least one administrator is required..."), so
+// surface that text rather than a generic fallback.
+function extractErrorMessage(err, fallback = 'Something went wrong') {
+  const data = err.response?.data;
+  if (typeof data === 'string' && data.trim()) return data.trim();
+  if (data && typeof data.message === 'string' && data.message.trim()) return data.message;
+  if (data && typeof data.error === 'string' && data.error.trim()) return data.error;
+  return err.message || fallback;
+}
+
 const ModernUserList = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -173,9 +185,12 @@ const ModernUserList = () => {
       setLoading(false);
     } catch (error) {
       console.error('Error fetching users:', error);
+      const message = error.response?.status === 403
+        ? "You don't have permission to manage users — admin access required"
+        : 'Failed to load users. Please try again later.';
       setSnackbar({
         open: true,
-        message: 'Failed to load users. Please try again later.',
+        message,
         severity: 'error'
       });
       setLoading(false);
@@ -212,8 +227,20 @@ const ModernUserList = () => {
         return;
       }
 
+      // Warn before an admin demotes themselves out of the ADMIN role.
+      if (
+        currentEditUser.id &&
+        currentEditUser.id === currentUser?.id &&
+        currentEditUser.role !== 'ADMIN'
+      ) {
+        const proceed = window.confirm(
+          "You'll lose admin access on next login. Continue?"
+        );
+        if (!proceed) return;
+      }
+
       let response;
-      
+
       if (currentEditUser.id) {
         // Update user
         response = await axios.put(
@@ -242,7 +269,7 @@ const ModernUserList = () => {
       console.error('Error saving user:', err);
       setSnackbar({
         open: true,
-        message: `Error: ${err.response?.data?.message || err.message}`,
+        message: extractErrorMessage(err),
         severity: 'error'
       });
     }
@@ -269,7 +296,7 @@ const ModernUserList = () => {
       console.error('Error deleting user:', err);
       setSnackbar({
         open: true,
-        message: `Error: ${err.response?.data?.message || err.message}`,
+        message: extractErrorMessage(err),
         severity: 'error'
       });
     }
