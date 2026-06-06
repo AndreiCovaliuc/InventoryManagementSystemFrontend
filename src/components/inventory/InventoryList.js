@@ -49,6 +49,7 @@ import {
   Remove as RemoveIcon
 } from '@mui/icons-material';
 import axios from 'axios';
+import { extractErrorMessage } from '../../utils/errors';
 
 // Get auth header function
 function authHeader() {
@@ -157,7 +158,7 @@ const ModernInventoryList = () => {
       console.error('Error fetching data:', error);
       setSnackbar({
         open: true,
-        message: 'Failed to load data. Please try again later.',
+        message: extractErrorMessage(error, 'Failed to load data. Please try again later.'),
         severity: 'error'
       });
       setLoading(false);
@@ -277,7 +278,7 @@ const ModernInventoryList = () => {
       console.error('Error saving inventory:', error);
       setSnackbar({
         open: true,
-        message: 'Failed to save inventory. Please try again.',
+        message: extractErrorMessage(error, 'Failed to save inventory. Please try again.'),
         severity: 'error'
       });
     }
@@ -347,10 +348,9 @@ const ModernInventoryList = () => {
       await fetchData();
       
       // Show detailed error message if available
-      const errorMessage = error.response?.data?.message || 'Failed to update quantity. Please try again.';
       setSnackbar({
         open: true,
-        message: errorMessage,
+        message: extractErrorMessage(error, 'Failed to update quantity. Please try again.'),
         severity: 'error'
       });
     }
@@ -382,7 +382,7 @@ const ModernInventoryList = () => {
       console.error('Error deleting inventory:', error);
       setSnackbar({
         open: true,
-        message: 'Failed to delete inventory. Please try again.',
+        message: extractErrorMessage(error, 'Failed to delete inventory. Please try again.'),
         severity: 'error'
       });
     }

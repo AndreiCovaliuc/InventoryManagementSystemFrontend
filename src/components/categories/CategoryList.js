@@ -38,6 +38,7 @@ import {
   Refresh as RefreshIcon
 } from '@mui/icons-material';
 import axios from 'axios';
+import { extractErrorMessage } from '../../utils/errors';
 
 // Get auth header function
 function authHeader() {
@@ -115,7 +116,7 @@ const ModernCategoryList = () => {
       console.error('Error fetching categories:', error);
       setSnackbar({
         open: true,
-        message: 'Failed to load categories. Please try again later.',
+        message: extractErrorMessage(error, 'Failed to load categories. Please try again later.'),
         severity: 'error'
       });
       setLoading(false);
@@ -226,7 +227,7 @@ const ModernCategoryList = () => {
       console.error('Error saving category:', error);
       setSnackbar({
         open: true,
-        message: 'Failed to save category. Please try again.',
+        message: extractErrorMessage(error, 'Failed to save category. Please try again.'),
         severity: 'error'
       });
     }
@@ -257,7 +258,7 @@ const ModernCategoryList = () => {
       console.error('Error deleting category:', error);
       setSnackbar({
         open: true,
-        message: 'Failed to delete category. It may be referenced by products.',
+        message: extractErrorMessage(error, 'Failed to delete category. It may be referenced by products.'),
         severity: 'error'
       });
     } finally {

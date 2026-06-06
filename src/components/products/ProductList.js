@@ -50,6 +50,7 @@ import {
   FilterList as FilterListIcon
 } from '@mui/icons-material';
 import axios from 'axios';
+import { extractErrorMessage } from '../../utils/errors';
 
 // Get auth header function
 function authHeader() {
@@ -145,7 +146,7 @@ const ModernProductList = () => {
       console.error('Error fetching data:', error);
       setSnackbar({
         open: true,
-        message: 'Failed to load data. Please try again later.',
+        message: extractErrorMessage(error, 'Failed to load data. Please try again later.'),
         severity: 'error'
       });
       setLoading(false);
@@ -329,7 +330,7 @@ const ModernProductList = () => {
       console.error('Error saving product:', error);
       setSnackbar({
         open: true,
-        message: 'Failed to save product. Please try again.',
+        message: extractErrorMessage(error, 'Failed to save product. Please try again.'),
         severity: 'error'
       });
     }
@@ -360,7 +361,7 @@ const ModernProductList = () => {
       console.error('Error deleting product:', error);
       setSnackbar({
         open: true,
-        message: 'Failed to delete product. It may be referenced by inventory or transactions.',
+        message: extractErrorMessage(error, 'Failed to delete product. It may be referenced by inventory or transactions.'),
         severity: 'error'
       });
     } finally {

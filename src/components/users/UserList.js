@@ -49,6 +49,7 @@ import {
   Search as SearchIcon
 } from '@mui/icons-material';
 import { AuthContext } from '../../context/AuthContext';
+import { extractErrorMessage } from '../../utils/errors';
 import axios from 'axios';
 
 // Get auth header function
@@ -61,17 +62,6 @@ function authHeader() {
   }
 }
 
-// Pull a human-readable message out of an axios error.
-// AdminUserController validation failures return 400 with the message as a
-// plain-string body (e.g. "At least one administrator is required..."), so
-// surface that text rather than a generic fallback.
-function extractErrorMessage(err, fallback = 'Something went wrong') {
-  const data = err.response?.data;
-  if (typeof data === 'string' && data.trim()) return data.trim();
-  if (data && typeof data.message === 'string' && data.message.trim()) return data.message;
-  if (data && typeof data.error === 'string' && data.error.trim()) return data.error;
-  return err.message || fallback;
-}
 
 const ModernUserList = () => {
   const theme = useTheme();

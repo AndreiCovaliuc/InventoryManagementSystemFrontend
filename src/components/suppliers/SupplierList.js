@@ -47,6 +47,7 @@ import {
   Refresh as RefreshIcon
 } from '@mui/icons-material';
 import axios from 'axios';
+import { extractErrorMessage } from '../../utils/errors';
 
 // Get auth header function
 function authHeader() {
@@ -128,7 +129,7 @@ const ModernSupplierList = () => {
       console.error('Error fetching suppliers:', error);
       setSnackbar({
         open: true,
-        message: 'Failed to load suppliers. Please try again later.',
+        message: extractErrorMessage(error, 'Failed to load suppliers. Please try again later.'),
         severity: 'error'
       });
       setLoading(false);
@@ -247,7 +248,7 @@ const ModernSupplierList = () => {
       console.error('Error saving supplier:', error);
       setSnackbar({
         open: true,
-        message: 'Failed to save supplier. Please try again.',
+        message: extractErrorMessage(error, 'Failed to save supplier. Please try again.'),
         severity: 'error'
       });
     }
@@ -278,7 +279,7 @@ const ModernSupplierList = () => {
       console.error('Error deleting supplier:', error);
       setSnackbar({
         open: true,
-        message: 'Failed to delete supplier. It may be referenced by products.',
+        message: extractErrorMessage(error, 'Failed to delete supplier. It may be referenced by products.'),
         severity: 'error'
       });
     } finally {
