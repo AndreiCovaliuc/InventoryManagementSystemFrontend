@@ -37,7 +37,9 @@ import ChatIcon from '@mui/icons-material/Chat'
 
 const Navbar = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  // Below lg the 8-item horizontal bar doesn't fit, so fall back to the
+  // hamburger drawer (which lists every item) instead of overflowing.
+  const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
   const location = useLocation();
   const navigate = useNavigate();
   const { currentUser, logout, isAdmin } = useContext(AuthContext);
@@ -226,9 +228,9 @@ const Navbar = () => {
           borderColor: 'divider',
         }}
       >
-        <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
+        <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}>
           {/* Left section */}
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', minWidth: 0 }}>
             {isMobile ? (
               <IconButton
                 size="large"
@@ -244,14 +246,16 @@ const Navbar = () => {
                 <MenuIcon />
               </IconButton>
             ) : (
-              <Box 
-                component={Link} 
+              <Box
+                component={Link}
                 to="/"
-                sx={{ 
-                  display: 'flex', 
+                sx={{
+                  display: 'flex',
                   alignItems: 'center',
                   textDecoration: 'none',
-                  color: 'inherit'
+                  color: 'inherit',
+                  minWidth: 0,
+                  overflow: 'hidden'
                 }}
               >
                 <Avatar
@@ -278,14 +282,19 @@ const Navbar = () => {
                   Inventra
                 </Typography>
                 {currentUser?.companyName && (
-                <Typography 
-                  variant="subtitle1" 
-                  sx={{ 
+                <Typography
+                  variant="subtitle1"
+                  noWrap
+                  title={currentUser.companyName}
+                  sx={{
                   ml: 1.5,
                   color: '#666',
                   fontWeight: 500,
                   fontFamily: "'Poppins', sans-serif",
-                  display: { xs: 'none', sm: 'block' }
+                  display: { xs: 'none', sm: 'block' },
+                  maxWidth: { sm: 140, md: 200, lg: 260 },
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
                 }}
               >
                 | {currentUser.companyName}
@@ -297,14 +306,29 @@ const Navbar = () => {
 
           {/* Center section - Navigation (desktop only) */}
           {!isMobile && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mx: 2 }}>
+            <Box sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              mx: 1,
+              minWidth: 0,
+              flexShrink: 1,
+              // Safety net: if items are still slightly too wide for the
+              // viewport, scroll within the bar rather than breaking the page.
+              overflowX: 'auto',
+              scrollbarWidth: 'none',
+              '&::-webkit-scrollbar': { display: 'none' }
+            }}>
               {drawerItems.map((item) => (
                 <Button 
                   key={item.text}
                   component={Link} 
                   to={item.path}
-                  sx={{ 
-                    mx: 1, 
+                  sx={{
+                    mx: 0.25,
+                    px: 1,
+                    flexShrink: 0,
+                    whiteSpace: 'nowrap',
+                    '& .MuiButton-startIcon': { mr: 0.5 },
                     color: 'text.primary',
                     fontWeight: isActive(item.path) ? 600 : 400,
                     borderRadius: '8px',
@@ -377,12 +401,17 @@ const Navbar = () => {
                 >
                   {currentUser?.username?.charAt(0).toUpperCase() || 'U'}
                 </Avatar>
-                <Typography 
-                  sx={{ 
+                <Typography
+                  noWrap
+                  title={currentUser?.username}
+                  sx={{
                     display: { xs: 'none', sm: 'block' },
                     color: 'text.primary',
                     fontWeight: 500,
-                    fontSize: '0.9rem'
+                    fontSize: '0.9rem',
+                    maxWidth: 120,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
                   }}
                 >
                   {currentUser?.username}
