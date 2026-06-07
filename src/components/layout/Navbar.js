@@ -37,9 +37,10 @@ import ChatIcon from '@mui/icons-material/Chat'
 
 const Navbar = () => {
   const theme = useTheme();
-  // Below lg the 8-item horizontal bar doesn't fit, so fall back to the
-  // hamburger drawer (which lists every item) instead of overflowing.
-  const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
+  // The full 8-item horizontal bar (icons + text) needs ~1280px; below that
+  // fall back to the hamburger drawer (which lists every item) rather than
+  // cutting items off.
+  const isMobile = useMediaQuery(theme.breakpoints.down(1280));
   const location = useLocation();
   const navigate = useNavigate();
   const { currentUser, logout, isAdmin } = useContext(AuthContext);
@@ -291,8 +292,8 @@ const Navbar = () => {
                   color: '#666',
                   fontWeight: 500,
                   fontFamily: "'Poppins', sans-serif",
-                  display: { xs: 'none', sm: 'block' },
-                  maxWidth: { sm: 140, md: 200, lg: 260 },
+                  display: { xs: 'none', lg: 'block' },
+                  maxWidth: { lg: 130, xl: 220 },
                   overflow: 'hidden',
                   textOverflow: 'ellipsis'
                 }}
@@ -306,18 +307,7 @@ const Navbar = () => {
 
           {/* Center section - Navigation (desktop only) */}
           {!isMobile && (
-            <Box sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              mx: 1,
-              minWidth: 0,
-              flexShrink: 1,
-              // Safety net: if items are still slightly too wide for the
-              // viewport, scroll within the bar rather than breaking the page.
-              overflowX: 'auto',
-              scrollbarWidth: 'none',
-              '&::-webkit-scrollbar': { display: 'none' }
-            }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', mx: 1, minWidth: 0, flexShrink: 1 }}>
               {drawerItems.map((item) => (
                 <Button 
                   key={item.text}
